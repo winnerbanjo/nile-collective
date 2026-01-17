@@ -1,11 +1,17 @@
-import nodemailer from 'nodemailer';
+// import nodemailer from 'nodemailer'; // SMTP disabled - Render blocks SMTP ports
 
-// Email configuration - using environment variables only (no hardcoded secrets)
+// Email configuration - use process.env.EMAIL_USER, process.env.EMAIL_PASS, process.env.ADMIN_EMAIL only (no hardcoded secrets)
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASSWORD = process.env.EMAIL_PASS;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
 
+// NODEMAILER SMTP DISABLED - Render blocks SMTP ports
+// TODO: Switch to Brevo API or similar email service
+// For now, all emails are logged to console for production monitoring
+
 // Create Nodemailer transporter with error handling (initialized once at module load)
+// COMMENTED OUT - SMTP blocked by Render
+/*
 let transporter;
 try {
   if (!EMAIL_USER || !EMAIL_PASSWORD) {
@@ -45,6 +51,8 @@ try {
   // Create a dummy transporter that won't crash
   transporter = null;
 }
+*/
+const transporter = null; // SMTP disabled - using console logging instead
 
 /**
  * HTML template for order confirmation email
@@ -680,330 +688,98 @@ const getShippingUpdateHTML = (order) => {
 
 /**
  * Send order confirmation email to customer
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendOrderConfirmationEmail = async (order) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const customerEmail = order.shippingDetails?.email;
-    if (!customerEmail) {
-      console.log('No email provided for order confirmation');
-      return false;
-    }
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: customerEmail,
-      subject: 'Order Confirmation - Nile Collective',
-      html: getOrderConfirmationHTML(order),
-      text: `Thank you for shopping with Nile Collective!\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}\n\nWe've received your order and it's being processed.`
-    };
-
-    // Send email with timeout protection - don't let it block order creation
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Order confirmation email sent to ${customerEmail}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending order confirmation email (non-blocking):', error);
-    console.error('Order will still be created successfully');
+  const to = order.shippingDetails?.email;
+  if (!to) {
+    console.log('No email provided for order confirmation');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send admin alert email when payment is successful
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER / process.env.ADMIN_EMAIL when adding Brevo/API.
  */
 export const sendAdminAlertEmail = async (order) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: ADMIN_EMAIL,
-      subject: '🚀 New Order Received - Nile Collective',
-      html: getAdminAlertHTML(order),
-      text: `New Order Received!\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nTotal: ₦${order.totalAmount.toLocaleString()}`
-    };
-
-    // Send email with timeout protection
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Admin alert email sent to ${ADMIN_EMAIL}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending admin alert email (non-blocking):', error);
+  const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  if (!to) {
+    console.log('No admin email configured (ADMIN_EMAIL or EMAIL_USER)');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send order status update email to customer
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendStatusUpdateEmail = async (order, newStatus) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const customerEmail = order.shippingDetails?.email;
-    if (!customerEmail) {
-      console.log('No email provided for status update');
-      return false;
-    }
-
-    // Only send shipping email for 'Shipped' status
-    if (newStatus === 'Shipped') {
-      const mailOptions = {
-        from: `"Nile Collective" <${EMAIL_USER}>`,
-        to: customerEmail,
-        subject: 'Your Order Has Been Shipped - Nile Collective',
-        html: getShippingUpdateHTML(order),
-        text: `Great news! Your order has been shipped and is on its way to you.\n\nOrder ID: ${order._id}\n\nYou can track your order status anytime by visiting your account.`
-      };
-
-      // Send email with timeout protection
-      await Promise.race([
-        transporter.sendMail(mailOptions),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email send timeout')), 10000)
-        )
-      ]);
-      console.log(`✅ Shipping update email sent to ${customerEmail} for order ${order._id}`);
-      return true;
-    }
-
-    // For other statuses, send a generic update
-    const statusMessages = {
-      'Processing': 'Your order is now being processed and will be prepared for shipment soon.',
-      'Delivered': 'Your order has been delivered! We hope you love your purchase.',
-      'Pending Verification': 'We have received your order and payment receipt. We are verifying your payment.',
-      'paid': 'Your payment has been confirmed! Your order is now being processed.',
-      'Paid': 'Your payment has been confirmed! Your order is now being processed.'
-    };
-
-    const message = statusMessages[newStatus] || 'Your order status has been updated.';
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: customerEmail,
-      subject: `Order Status Update - ${newStatus}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-        </head>
-        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px;">
-            <h2 style="color: #000000; text-transform: uppercase; letter-spacing: 1px;">Order Status Update</h2>
-            <p style="color: #666666; font-size: 16px; line-height: 1.6;">${message}</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Order ID:</strong> ${order._id}</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Status:</strong> ${newStatus}</p>
-          </div>
-        </body>
-        </html>
-      `,
-      text: `${message}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`
-    };
-
-    // Send email with timeout protection
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Status update email sent to ${customerEmail} for order ${order._id}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending status update email (non-blocking):', error);
+  const to = order.shippingDetails?.email;
+  if (!to) {
+    console.log('No email provided for status update');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send bank transfer pending email to customer
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendBankTransferPendingEmail = async (order) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const customerEmail = order.shippingDetails?.email;
-    if (!customerEmail) {
-      console.log('No email provided for bank transfer pending notification');
-      return false;
-    }
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: customerEmail,
-      subject: 'Complete Your Payment - Order Pending - Nile Collective',
-      html: getBankTransferPendingHTML(order),
-      text: `We've received your order! Please complete your bank transfer. Your order is currently PENDING verification.\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}`
-    };
-
-    // Send email with timeout protection - don't let it block order creation
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Bank transfer pending email sent to ${customerEmail}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending bank transfer pending email (non-blocking):', error);
-    console.error('Order will still be created successfully');
+  const to = order.shippingDetails?.email;
+  if (!to) {
+    console.log('No email provided for bank transfer pending notification');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send admin alert for bank transfer order
+ * SMTP disabled - console log only. Use process.env.ADMIN_EMAIL or process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendBankTransferAdminAlert = async (order) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: ADMIN_EMAIL,
-      subject: 'New Transfer Order Pending - Check your bank app',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-        </head>
-        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px;">
-            <h2 style="color: #000000; text-transform: uppercase; letter-spacing: 1px;">New Transfer Order Pending</h2>
-            <p style="color: #666666; font-size: 16px; line-height: 1.6;">A new bank transfer order has been received. Please check your bank app to verify the payment.</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Order ID:</strong> ${order._id}</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Customer:</strong> ${order.shippingDetails?.name || 'N/A'}</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Amount:</strong> ₦${order.totalAmount.toLocaleString()}</p>
-            <p style="color: #666666; font-size: 14px;"><strong>Receipt URL:</strong> <a href="${order.receiptUrl}" target="_blank">View Receipt</a></p>
-          </div>
-        </body>
-        </html>
-      `,
-      text: `New Transfer Order Pending - Check your bank app\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nAmount: ₦${order.totalAmount.toLocaleString()}\nReceipt: ${order.receiptUrl}`
-    };
-
-    // Send email with timeout protection - don't let it block order creation
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Bank transfer admin alert sent to ${ADMIN_EMAIL}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending bank transfer admin alert (non-blocking):', error);
-    console.error('Order will still be created successfully');
+  const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  if (!to) {
+    console.log('No admin email configured (ADMIN_EMAIL or EMAIL_USER)');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send official receipt email when admin marks order as paid
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendOfficialReceiptEmail = async (order) => {
-  try {
-    if (!transporter) {
-      console.error('Email transporter not initialized. Skipping email send.');
-      return false;
-    }
-
-    const customerEmail = order.shippingDetails?.email;
-    if (!customerEmail) {
-      console.log('No email provided for official receipt');
-      return false;
-    }
-
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: customerEmail,
-      subject: 'Payment Confirmed - Official Receipt - Nile Collective',
-      html: getOfficialReceiptHTML(order),
-      text: `Payment Confirmed!\n\nYour payment has been verified and your order is now being processed.\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}\n\nYou'll receive another email when your order ships.`
-    };
-
-    // Send email with timeout protection
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Official receipt email sent to ${customerEmail} for order ${order._id}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending official receipt email (non-blocking):', error);
+  const to = order.shippingDetails?.email;
+  if (!to) {
+    console.log('No email provided for official receipt');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };
 
 /**
  * Send newsletter subscription confirmation (optional)
+ * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
  */
 export const sendNewsletterConfirmation = async (email) => {
-  try {
-    const mailOptions = {
-      from: `"Nile Collective" <${EMAIL_USER}>`,
-      to: email,
-      subject: 'Welcome to Nile Collective Newsletter',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-        </head>
-        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px;">
-            <h2 style="color: #000000; text-transform: uppercase; letter-spacing: 1px;">Welcome to Nile Collective</h2>
-            <p style="color: #666666; font-size: 16px; line-height: 1.6;">Thank you for subscribing to our newsletter! You'll be the first to know about new arrivals, exclusive offers, and style inspiration.</p>
-          </div>
-        </body>
-        </html>
-      `,
-      text: 'Thank you for subscribing to our newsletter!'
-    };
-
-    // Send email with timeout protection
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout')), 10000)
-      )
-    ]);
-    console.log(`✅ Newsletter confirmation sent to ${email}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending newsletter confirmation (non-blocking):', error);
+  const to = email;
+  if (!to) {
+    console.log('No email provided for newsletter confirmation');
     return false;
   }
+  console.log('Email would have been sent to:', to);
+  return true;
 };

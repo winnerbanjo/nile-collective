@@ -135,14 +135,9 @@ router.post('/', async (req, res) => {
       order: savedOrder
     });
 
-    // Send order confirmation email in background (non-blocking, after response)
-    setImmediate(async () => {
-      try {
-        await sendOrderConfirmationEmail(savedOrder);
-      } catch (emailError) {
-        console.error('Error sending order confirmation email (non-blocking):', emailError);
-        // Email failure doesn't affect order creation
-      }
+    // Fire-and-forget email (do not await - user must see success in <1s)
+    setImmediate(() => {
+      sendOrderConfirmationEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
     });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -202,54 +197,35 @@ router.post('/verify', async (req, res) => {
 
     // Check if payment was successful
     if (paystackResponse.data.status && paystackResponse.data.data.status === 'success') {
-      // Send response IMMEDIATELY - before any database operations
+      // 1) Save order first
+      order.status = 'paid';
+      order.paymentReference = reference;
+      await order.save();
+
+      // 2) Send response IMMEDIATELY after save - user must see success in <1s
       res.json({
         success: true,
         message: 'Payment verified successfully',
         orderId: order._id
       });
 
-      // Update order status and reduce stock in background (non-blocking)
+      // 3) Fire-and-forget: stock reduction and emails (do not await)
       setImmediate(async () => {
         try {
-          // Update order status
-          order.status = 'paid';
-          order.paymentReference = reference;
-          await order.save();
-
-          // Reduce stock for each item in the order
           for (const item of order.items) {
             const product = await Product.findById(item.productId);
-            if (product) {
-              // If item has size and color, find the variant and reduce stock
-              if (item.size && item.color && product.variants && product.variants.length > 0) {
-                const variant = product.variants.find(
-                  v => v.size === item.size && v.color === item.color
-                );
-                if (variant) {
-                  variant.stock = Math.max(0, variant.stock - item.quantity);
-                  await product.save();
-                }
+            if (product && item.size && item.color && product.variants?.length) {
+              const v = product.variants.find((x) => x.size === item.size && x.color === item.color);
+              if (v) {
+                v.stock = Math.max(0, v.stock - item.quantity);
+                await product.save();
               }
-              // Note: If no variants, we might want to add a general stock field to Product model
-              // For now, we only reduce stock for variant-based products
             }
           }
-
-          // Send emails in background (non-blocking)
-          try {
-            await sendOrderConfirmationEmail(order);
-          } catch (emailError) {
-            console.error('Error sending order confirmation email (non-blocking):', emailError);
-          }
-
-          try {
-            await sendAdminAlertEmail(order);
-          } catch (emailError) {
-            console.error('Error sending admin alert email (non-blocking):', emailError);
-          }
-        } catch (error) {
-          console.error('Error in background order processing:', error);
+          sendOrderConfirmationEmail(order).catch((e) => console.error('Email (non-blocking):', e));
+          sendAdminAlertEmail(order).catch((e) => console.error('Email (non-blocking):', e));
+        } catch (err) {
+          console.error('Background order processing:', err);
         }
       });
     } else {
@@ -330,21 +306,10 @@ router.post('/manual', async (req, res) => {
       message: 'Order received! We will verify your transfer and start processing your luxury items immediately.'
     });
 
-    // Send emails in background (non-blocking, after response)
-    setImmediate(async () => {
-      // Send bank transfer pending email to customer
-      try {
-        await sendBankTransferPendingEmail(savedOrder);
-      } catch (emailError) {
-        console.error('Error sending bank transfer pending email (non-blocking):', emailError);
-      }
-
-      // Send admin alert for bank transfer order
-      try {
-        await sendBankTransferAdminAlert(savedOrder);
-      } catch (emailError) {
-        console.error('Error sending bank transfer admin alert (non-blocking):', emailError);
-      }
+    // Fire-and-forget emails (do not await)
+    setImmediate(() => {
+      sendBankTransferPendingEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
+      sendBankTransferAdminAlert(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
     });
   } catch (error) {
     console.error('Error creating manual order:', error);
@@ -396,29 +361,19 @@ router.put('/:id/status', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Special handling: When admin manually changes from 'Pending Verification' to 'paid', send official receipt
-    if (previousStatus === 'Pending Verification' && status === 'paid') {
-      try {
-        await sendOfficialReceiptEmail(order);
-        console.log(`✅ Official receipt email sent for order ${order._id} (status changed from ${previousStatus} to ${status})`);
-      } catch (emailError) {
-        console.error('Error sending official receipt email (non-blocking):', emailError);
-      }
-    } else {
-      // Send status update email for all other relevant statuses (non-blocking)
-      const statusesToEmail = ['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'];
-      if (statusesToEmail.includes(status)) {
-        try {
-          await sendStatusUpdateEmail(order, status);
-        } catch (emailError) {
-          console.error('Error sending status update email (non-blocking):', emailError);
-        }
-      }
-    }
-
+    // Send response immediately - user must see success in <1s
     res.json({
       success: true,
       order: order
+    });
+
+    // Fire-and-forget emails (do not await)
+    setImmediate(() => {
+      if (previousStatus === 'Pending Verification' && status === 'paid') {
+        sendOfficialReceiptEmail(order).catch((e) => console.error('Email (non-blocking):', e));
+      } else if (['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'].includes(status)) {
+        sendStatusUpdateEmail(order, status).catch((e) => console.error('Email (non-blocking):', e));
+      }
     });
   } catch (error) {
     console.error('Error updating order status:', error);
