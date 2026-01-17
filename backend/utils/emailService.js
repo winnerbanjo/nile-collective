@@ -1,21 +1,22 @@
 import nodemailer from 'nodemailer';
 
-// Email configuration
-const EMAIL_USER = 'technile0@gmail.com';
-const EMAIL_PASSWORD = 'ozqy moca kthh arrm';
-const ADMIN_EMAIL = 'technile0@gmail.com';
+// Email configuration - using environment variables with fallback
+const EMAIL_USER = process.env.EMAIL_USER || 'technile0@gmail.com';
+const EMAIL_PASSWORD = process.env.EMAIL_PASS || 'ozqy moca kthh arrm';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'technile0@gmail.com';
 
 // Create Nodemailer transporter with error handling
 let transporter;
 try {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASSWORD
     },
+    pool: true, // Keep connection open to prevent timeouts on cloud hosts like Render
     tls: {
       rejectUnauthorized: false
     },
