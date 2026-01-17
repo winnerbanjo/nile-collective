@@ -1,5 +1,4 @@
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 
 const Terms = () => {
   return (
@@ -130,7 +129,6 @@ const Terms = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 
 const Success = () => {
   const navigate = useNavigate()
@@ -65,7 +64,6 @@ const Success = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   )
 }

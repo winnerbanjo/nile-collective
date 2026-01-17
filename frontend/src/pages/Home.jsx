@@ -4,7 +4,6 @@ import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import FeaturedProducts from '../components/FeaturedProducts'
 import ProductGrid from '../components/ProductGrid'
-import Footer from '../components/Footer'
 
 const Home = () => {
   const [products, setProducts] = useState([])
@@ -42,7 +41,6 @@ const Home = () => {
       <div id="products">
         <ProductGrid products={products} loading={loading} error={error} />
       </div>
-      <Footer />
     </div>
   )
 }

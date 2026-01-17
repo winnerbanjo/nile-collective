@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 import { useCurrency } from '../context/CurrencyContext'
 
 const OrderSummary = () => {
@@ -191,7 +190,6 @@ const OrderSummary = () => {
           </button>
         </div>
       </div>
-      <Footer />
     </div>
   )
 }

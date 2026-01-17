@@ -123,7 +123,7 @@ const Navbar = () => {
             </div>
 
             {/* Icons - Absolute Right */}
-            <div className="flex items-center space-x-4 flex-shrink-0 ml-auto">
+            <div className="flex items-center space-x-4 flex-shrink-0 ml-6">
               {/* Currency Switcher - Desktop */}
               <div className="hidden lg:block relative" ref={currencyDesktopRef}>
                 <button

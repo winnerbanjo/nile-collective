@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Navbar from '../components/Navbar'
 import ProductGrid from '../components/ProductGrid'
-import Footer from '../components/Footer'
 
 const ShopAll = () => {
   const [products, setProducts] = useState([])
@@ -44,7 +43,6 @@ const ShopAll = () => {
         </div>
       </div>
       <ProductGrid products={products} loading={loading} error={error} />
-      <Footer />
     </div>
   )
 }

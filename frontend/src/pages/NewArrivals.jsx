@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Navbar from '../components/Navbar'
 import ProductGrid from '../components/ProductGrid'
-import Footer from '../components/Footer'
 
 const NewArrivals = () => {
   const [products, setProducts] = useState([])
@@ -56,7 +55,6 @@ const NewArrivals = () => {
           </p>
         </div>
       )}
-      <Footer />
     </div>
   )
 }
