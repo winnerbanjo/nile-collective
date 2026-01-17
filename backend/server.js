@@ -27,9 +27,11 @@ import cloudinary from './config/cloudinary.js';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ✅ UPDATED CORS: This allows your Vercel site to talk to this backend
+// ✅ UPDATED CORS: This allows your production site to talk to this backend
 app.use(cors({
   origin: [
+    'https://nilecollective.co',
+    'https://www.nilecollective.co',
     'https://nile-collective.vercel.app',
     'https://nile-collective-ckji.vercel.app'
   ],
