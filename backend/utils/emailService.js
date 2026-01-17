@@ -54,7 +54,7 @@ async function sendViaMailtrap({ to, subject, html, text }) {
 }
 
 /**
- * Base luxury email template - minimal, high-end: white space, serif fonts, black buttons
+ * Base FashionNova/ASOS-style email template - left-aligned, stacked logo, sans-serif, thin dividers
  */
 const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', buttonUrl = '#') => {
   const formatPrice = (price) => {
@@ -72,9 +72,6 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
     day: 'numeric'
   });
 
-  // Logo URL - update this to your actual logo hosted on nilecollective.co
-  const logoUrl = 'https://nilecollective.co/logo.png'; // Replace with actual logo URL
-
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -83,79 +80,92 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title} - Nile Collective</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; font-family: 'Arial', 'Helvetica', sans-serif; background-color: #ffffff;">
       <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 80px 20px;">
+          <td align="center" style="padding: 60px 20px;">
             <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
-              <!-- Logo / Header -->
+              <!-- Logo - Left-aligned, stacked -->
               <tr>
-                <td style="padding: 0 0 60px; text-align: center;">
-                  <img src="${logoUrl}" alt="Nile Collective" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                  <div style="display: none; font-family: 'Nunito Sans', sans-serif; font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; text-transform: lowercase; line-height: 0.72;">
-                    <div>nile</div>
-                    <div>collective</div>
+                <td style="padding: 0 0 50px; text-align: left;">
+                  <div style="font-family: 'Arial Black', 'Nunito Sans', sans-serif; font-size: 32px; font-weight: 900; color: #000000; letter-spacing: 1px; line-height: 1.1;">
+                    <div style="margin-bottom: 2px;">NILE</div>
+                    <div>COLLECTIVE</div>
                   </div>
                 </td>
               </tr>
               
-              <!-- Title -->
+              <!-- Title - Left-aligned -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                <td style="padding: 0 0 30px; text-align: left;">
+                  <h1 style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 0.5px;">
                     ${title}
                   </h1>
                 </td>
               </tr>
               
-              <!-- Message -->
+              <!-- Message - Left-aligned -->
               <tr>
-                <td style="padding: 0 0 60px; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 17px; line-height: 1.9; color: #000000; max-width: 480px; margin-left: auto; margin-right: auto;">
+                <td style="padding: 0 0 50px; text-align: left;">
+                  <p style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 15px; line-height: 1.7; color: #333333;">
                     ${message}
                   </p>
                 </td>
               </tr>
               
-              <!-- Order Details - Minimal, no borders -->
+              <!-- Thin Grey Divider -->
               <tr>
-                <td style="padding: 0 0 60px;">
+                <td style="padding: 0 0 40px;">
+                  <div style="border-top: 1px solid #e5e5e5;"></div>
+                </td>
+              </tr>
+              
+              <!-- Order Details - Left-aligned, minimal -->
+              <tr>
+                <td style="padding: 0 0 50px;">
                   <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Order ID</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</div>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Order ID</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 14px; color: #000000; font-weight: 400;">${order._id}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Date</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${orderDate}</div>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Date</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 14px; color: #000000; font-weight: 400;">${orderDate}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Total</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; color: #000000; font-weight: 400;">${formatPrice(order.totalAmount || 0)}</div>
+                      <td style="padding: 20px 0;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Total</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 24px; color: #000000; font-weight: 400;">${formatPrice(order.totalAmount || 0)}</div>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Button - Black background -->
+              <!-- Button - Solid black, left-aligned -->
               <tr>
-                <td style="padding: 0 0 80px; text-align: center;">
-                  <a href="${buttonUrl}" style="display: inline-block; padding: 18px 48px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Georgia', 'Times New Roman', serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400;">
+                <td style="padding: 0 0 60px; text-align: left;">
+                  <a href="${buttonUrl}" style="display: inline-block; padding: 16px 40px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;">
                     ${buttonText}
                   </a>
                 </td>
               </tr>
               
-              <!-- Footer -->
+              <!-- Thin Grey Divider -->
               <tr>
-                <td style="padding: 60px 0 0; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 1px;">
+                <td style="padding: 0 0 30px;">
+                  <div style="border-top: 1px solid #e5e5e5;"></div>
+                </td>
+              </tr>
+              
+              <!-- Footer - Left-aligned -->
+              <tr>
+                <td style="padding: 0; text-align: left;">
+                  <p style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 0.5px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -170,16 +180,10 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
 };
 
 /**
- * HTML template for order confirmation email (luxury design)
+ * HTML template for order confirmation email (FashionNova/ASOS style)
  */
 const getOrderConfirmationHTML = (order) => {
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  const message = 'Payment Received. We are preparing your luxury pieces.';
+  const message = 'Thank you for your order! We are preparing your pieces and will notify you once they ship.';
   const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
   return getLuxuryEmailBase('Order Confirmation', message, order, 'View Order', viewOrderUrl);
 };
@@ -363,11 +367,8 @@ const getBankTransferPendingHTML = (order) => {
   const hasReceipt = order.receiptUrl && order.receiptUrl.trim() !== '';
   const title = hasReceipt ? 'Order Received' : 'Complete Your Payment';
   const message = hasReceipt 
-    ? `We've received your order and your payment receipt. Our team is currently verifying the transfer. You will be notified as soon as your order is confirmed and ready for shipping.`
+    ? `Thank you for your order! We have received your payment receipt. Our team is currently verifying the transfer with the bank. You will receive another notification once your order is confirmed and ready for shipping.`
     : `We've received your order! It's currently pending. Please transfer ${amount} to complete your purchase.`;
-
-  // Logo URL
-  const logoUrl = 'https://nilecollective.co/logo.png';
 
   return `
     <!DOCTYPE html>
@@ -377,61 +378,67 @@ const getBankTransferPendingHTML = (order) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title} - Nile Collective</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; font-family: 'Arial', 'Helvetica', sans-serif; background-color: #ffffff;">
       <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 80px 20px;">
+          <td align="center" style="padding: 60px 20px;">
             <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
-              <!-- Logo -->
+              <!-- Logo - Left-aligned, stacked -->
               <tr>
-                <td style="padding: 0 0 60px; text-align: center;">
-                  <img src="${logoUrl}" alt="Nile Collective" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                  <div style="display: none; font-family: 'Nunito Sans', sans-serif; font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; text-transform: lowercase; line-height: 0.72;">
-                    <div>nile</div>
-                    <div>collective</div>
+                <td style="padding: 0 0 50px; text-align: left;">
+                  <div style="font-family: 'Arial Black', 'Nunito Sans', sans-serif; font-size: 32px; font-weight: 900; color: #000000; letter-spacing: 1px; line-height: 1.1;">
+                    <div style="margin-bottom: 2px;">NILE</div>
+                    <div>COLLECTIVE</div>
                   </div>
                 </td>
               </tr>
               
-              <!-- Title -->
+              <!-- Title - Left-aligned -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                <td style="padding: 0 0 30px; text-align: left;">
+                  <h1 style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 0.5px;">
                     ${title}
                   </h1>
                 </td>
               </tr>
               
-              <!-- Message -->
+              <!-- Message - Left-aligned -->
               <tr>
-                <td style="padding: 0 0 60px; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 17px; line-height: 1.9; color: #000000; max-width: 480px; margin-left: auto; margin-right: auto;">
+                <td style="padding: 0 0 50px; text-align: left;">
+                  <p style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 15px; line-height: 1.7; color: #333333;">
                     ${message}
                   </p>
                 </td>
               </tr>
               
               ${!hasReceipt ? `
-              <!-- Bank Details - Minimal, no borders -->
+              <!-- Thin Grey Divider -->
               <tr>
-                <td style="padding: 0 0 60px;">
+                <td style="padding: 0 0 40px;">
+                  <div style="border-top: 1px solid #e5e5e5;"></div>
+                </td>
+              </tr>
+              
+              <!-- Bank Details - Left-aligned -->
+              <tr>
+                <td style="padding: 0 0 50px;">
                   <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 32px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Account Name</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400;">${bankDetails.accountName}</div>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Account Name</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 16px; color: #000000; font-weight: 400;">${bankDetails.accountName}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 32px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Bank Name</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400;">${bankDetails.bankName}</div>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Bank Name</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 16px; color: #000000; font-weight: 400;">${bankDetails.bankName}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 32px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Account Number</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400; letter-spacing: 2px;">${bankDetails.accountNumber}</div>
+                      <td style="padding: 20px 0;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Account Number</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 20px; color: #000000; font-weight: 400; letter-spacing: 1px;">${bankDetails.accountNumber}</div>
                       </td>
                     </tr>
                   </table>
@@ -439,30 +446,53 @@ const getBankTransferPendingHTML = (order) => {
               </tr>
               ` : ''}
               
-              <!-- Order Details - Minimal, no borders -->
+              <!-- Thin Grey Divider -->
               <tr>
-                <td style="padding: 0 0 60px;">
+                <td style="padding: 0 0 40px;">
+                  <div style="border-top: 1px solid #e5e5e5;"></div>
+                </td>
+              </tr>
+              
+              <!-- Order Details - Left-aligned -->
+              <tr>
+                <td style="padding: 0 0 50px;">
                   <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Order ID</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</div>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Order ID</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 14px; color: #000000; font-weight: 400;">${order._id}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Amount</div>
-                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; color: #000000; font-weight: 400;">${amount}</div>
+                      <td style="padding: 20px 0;">
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Amount</div>
+                        <div style="font-family: 'Arial', 'Helvetica', sans-serif; font-size: 24px; color: #000000; font-weight: 400;">${amount}</div>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Footer -->
+              <!-- Button - Solid black, left-aligned -->
               <tr>
-                <td style="padding: 60px 0 0; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 1px;">
+                <td style="padding: 0 0 60px; text-align: left;">
+                  <a href="https://nilecollective.co/order/${order._id}" style="display: inline-block; padding: 16px 40px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;">
+                    View Order
+                  </a>
+                </td>
+              </tr>
+              
+              <!-- Thin Grey Divider -->
+              <tr>
+                <td style="padding: 0 0 30px;">
+                  <div style="border-top: 1px solid #e5e5e5;"></div>
+                </td>
+              </tr>
+              
+              <!-- Footer - Left-aligned -->
+              <tr>
+                <td style="padding: 0; text-align: left;">
+                  <p style="margin: 0; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 11px; color: #999999; letter-spacing: 0.5px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -486,21 +516,27 @@ const getOfficialReceiptHTML = (order) => {
 };
 
 /**
- * HTML template for shipping update email (luxury design with tracking)
+ * HTML template for shipping update email (FashionNova/ASOS style)
  */
 const getShippingUpdateHTML = (order) => {
   const trackingNumber = order.trackingNumber || 'Will be provided soon';
-  const message = `Your style is on the way. Tracking: ${trackingNumber}.`;
+  const message = `Your Nile pieces are on the way! Tracking number: ${trackingNumber}.`;
   const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
-  return getLuxuryEmailBase('Your Style is On The Way', message, order, 'Track Order', viewOrderUrl);
+  return getLuxuryEmailBase('Your Nile Pieces are on the Way', message, order, 'Track Order', viewOrderUrl);
 };
 
 /**
- * HTML template for luxury status update (for Processing, Delivered, etc.)
+ * HTML template for status update (for Processing, Delivered, etc.)
  */
 const getLuxuryStatusUpdateHTML = (order, newStatus, message) => {
   const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
-  return getLuxuryEmailBase('Order Status Update', message, order, 'View Order', viewOrderUrl);
+  let title = 'Order Update';
+  if (newStatus === 'Delivered') {
+    title = 'Delivered: Your Nile Collective Style';
+  } else if (newStatus === 'Processing' || newStatus === 'Paid' || newStatus === 'paid') {
+    title = 'Your Nile Collective Order';
+  }
+  return getLuxuryEmailBase(title, message, order, 'View Order', viewOrderUrl);
 };
 
 /**
@@ -515,8 +551,9 @@ export const sendOrderConfirmationEmail = async (order) => {
       return false;
     }
     const html = getOrderConfirmationHTML(order);
-    const text = `Payment Received. We are preparing your luxury pieces.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nThank you for shopping with Nile Collective.`;
-    return await sendViaMailtrap({ to, subject: 'Order Confirmation - Nile Collective', html, text });
+    const text = `Thank you for your order! We are preparing your pieces and will notify you once they ship.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nThank you for shopping with Nile Collective.`;
+    const orderId = order._id.toString().substring(0, 8).toUpperCase();
+    return await sendViaMailtrap({ to, subject: `Your Nile Collective Order #${orderId}`, html, text });
   } catch (e) {
     console.error('sendOrderConfirmationEmail (non-blocking):', e?.message || e);
     return false;
@@ -550,13 +587,20 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
       return false;
     }
     let html, subject, text;
+    const orderId = order._id.toString().substring(0, 8).toUpperCase();
+    
     if (newStatus === 'Shipped') {
-      subject = 'Your Style is On The Way - Nile Collective';
+      subject = 'Your Nile Pieces are on the Way';
       html = getShippingUpdateHTML(order);
-      text = `Your style is on the way. Tracking: ${order.trackingNumber || 'Will be provided soon'}.\n\nOrder ID: ${order._id}`;
+      text = `Your Nile pieces are on the way! Tracking number: ${order.trackingNumber || 'Will be provided soon'}.\n\nOrder ID: ${order._id}`;
+    } else if (newStatus === 'Delivered') {
+      subject = 'Delivered: Your Nile Collective Style';
+      const msg = 'Your order has been delivered! We hope you love your new pieces.';
+      html = getLuxuryStatusUpdateHTML(order, newStatus, msg);
+      text = `${msg}\n\nOrder ID: ${order._id}`;
     } else {
-      const msg = { Processing: 'Payment Received. We are preparing your luxury pieces.', Delivered: 'Your order has been delivered!', 'Pending Verification': 'We are verifying your payment.', paid: 'Payment Received. We are preparing your luxury pieces.', Paid: 'Payment Received. We are preparing your luxury pieces.' }[newStatus] || 'Your order status has been updated.';
-      subject = `Order Status Update - ${newStatus}`;
+      const msg = { Processing: 'Thank you for your order! We are preparing your pieces and will notify you once they ship.', 'Pending Verification': 'We are verifying your payment.', paid: 'Thank you for your order! We are preparing your pieces and will notify you once they ship.', Paid: 'Thank you for your order! We are preparing your pieces and will notify you once they ship.' }[newStatus] || 'Your order status has been updated.';
+      subject = `Your Nile Collective Order #${orderId}`;
       html = getLuxuryStatusUpdateHTML(order, newStatus, msg);
       text = `${msg}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`;
     }
@@ -582,10 +626,10 @@ export const sendBankTransferPendingEmail = async (order) => {
     // Check if receiptUrl exists - different subject
     const hasReceipt = order.receiptUrl && order.receiptUrl.trim() !== '';
     const subject = hasReceipt 
-      ? 'Order Received - Payment Verification in Progress - Nile Collective'
+      ? "We've Received Your Style & Receipt"
       : 'Complete Your Payment - Order Pending - Nile Collective';
     const text = hasReceipt
-      ? `We've received your order and your payment receipt. Our team is currently verifying the transfer. You will be notified as soon as your order is confirmed.\n\nOrder ID: ${order._id}`
+      ? `Thank you for your order! We have received your payment receipt. Our team is currently verifying the transfer with the bank. You will receive another notification once your order is confirmed and ready for shipping.\n\nOrder ID: ${order._id}`
       : `We've received your order! It's currently pending. Please transfer ₦${(order.totalAmount || 0).toLocaleString()} to complete your purchase.\n\nOrder ID: ${order._id}`;
     return await sendViaMailtrap({ to, subject, html, text });
   } catch (e) {
