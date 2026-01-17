@@ -113,7 +113,7 @@ const ProductGrid = ({ products = [], loading = false, error = null }) => {
   }
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#f9f9f9' }}>
+    <section className="py-16 px-4 sm:px-6 lg:px-8 relative bg-white" style={{ backgroundColor: 'white', position: 'relative', zIndex: 1 }}>
       <div className="max-w-7xl mx-auto">
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-8"

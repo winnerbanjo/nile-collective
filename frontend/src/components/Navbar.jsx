@@ -14,7 +14,6 @@ const Navbar = () => {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const searchRef = useRef(null)
   const currencyDesktopRef = useRef(null)
-  const currencyMobileRef = useRef(null)
 
   // User icon click - links to account/dashboard
   const handleUserIconClick = () => {
@@ -28,9 +27,7 @@ const Navbar = () => {
   // Close currency dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const isOutsideDesktop = currencyDesktopRef.current && !currencyDesktopRef.current.contains(event.target)
-      const isOutsideMobile = currencyMobileRef.current && !currencyMobileRef.current.contains(event.target)
-      if (isOutsideDesktop && isOutsideMobile) {
+      if (currencyDesktopRef.current && !currencyDesktopRef.current.contains(event.target)) {
         setIsCurrencyOpen(false)
       }
     }
@@ -122,17 +119,29 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Icons - Absolute Right */}
-            <div className="flex items-center space-x-4 flex-shrink-0 ml-6">
-              {/* Currency Switcher - Desktop */}
-              <div className="hidden lg:block relative" ref={currencyDesktopRef}>
+            {/* Icons & Currency - Absolute Right */}
+            <div className="flex items-center gap-4 flex-shrink-0 ml-6">
+              {/* Search Icon - Mobile Only */}
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setIsSearchFocused(true)
+                  setTimeout(() => searchRef.current?.focus(), 100)
+                }}
+                className="lg:hidden text-black hover:text-gray-600 transition-colors"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+              {/* Currency Switcher - Desktop & Mobile in Header */}
+              <div className="relative" ref={currencyDesktopRef}>
                 <button
                   onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
                   className="flex items-center space-x-1 text-black hover:text-gray-600 transition-colors text-sm font-light uppercase tracking-wider"
                   aria-label="Currency"
                 >
                   <span>{currencyOptions.find(opt => opt.code === currency)?.symbol || '₦'}</span>
-                  <span className="text-xs">{currency}</span>
+                  <span className="text-xs lg:text-xs">{currency}</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isCurrencyOpen && (
@@ -154,18 +163,6 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-              {/* Search Icon - Mobile Only */}
-              <button
-                onClick={() => {
-                  setSearchQuery('')
-                  setIsSearchFocused(true)
-                  setTimeout(() => searchRef.current?.focus(), 100)
-                }}
-                className="lg:hidden text-black hover:text-gray-600 transition-colors"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
               {/* User Icon 👤 */}
               <button
                 onClick={handleUserIconClick}
@@ -244,36 +241,6 @@ const Navbar = () => {
               >
                 About
               </Link>
-              {/* Currency Switcher - Mobile */}
-              <div className="relative" ref={currencyMobileRef}>
-                <button
-                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                  className="flex items-center space-x-1 text-black hover:text-gray-600 transition-colors text-sm font-light uppercase tracking-wider"
-                  aria-label="Currency"
-                >
-                  <span>{currencyOptions.find(opt => opt.code === currency)?.symbol || '₦'}</span>
-                  <span>{currency}</span>
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isCurrencyOpen && (
-                  <div className="absolute left-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    {currencyOptions.map((option) => (
-                      <button
-                        key={option.code}
-                        onClick={() => handleCurrencyChange(option.code)}
-                        className={`w-full text-left px-3 py-2 text-sm font-light uppercase tracking-wider transition-colors ${
-                          currency === option.code
-                            ? 'bg-black text-white'
-                            : 'text-black hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="mr-2">{option.symbol}</span>
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

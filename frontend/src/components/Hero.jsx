@@ -10,7 +10,6 @@ const Hero = () => {
     showHeroSubtitle: true
   })
   const [loading, setLoading] = useState(true)
-  const [scrollY, setScrollY] = useState(0)
   const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
@@ -55,14 +54,7 @@ const Hero = () => {
     // Set up polling to refresh settings every 5 seconds (backup refresh)
     const intervalId = setInterval(fetchSettings, 5000)
 
-    // Parallax scroll effect
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-
-    window.addEventListener('scroll', handleScroll)
     return () => {
-      window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('heroSettingsUpdated', handleSettingsUpdate)
       clearInterval(intervalId)
     }
@@ -80,28 +72,17 @@ const Hero = () => {
     return null
   }
 
-  const parallaxTransform = `translateY(${scrollY * 0.3}px) scale(${1 + scrollY * 0.0001})`
-
   return (
-    <section className="relative w-full" style={{ height: '100vh' }}>
-      {/* Hero Image Container with Parallax and Zoom-in Animation */}
-      <div className="absolute inset-0">
-        <div
-          style={{
-            transform: parallaxTransform,
-            transition: 'transform 0.1s ease-out'
-          }}
-          className="w-full h-full"
-        >
-          <img
-            src={settings.heroImage}
-            alt="Fashion Hero"
-            onLoad={() => setImageLoaded(true)}
-            className={`w-full h-full object-cover object-center transition-transform duration-1000 ease-out ${
-              imageLoaded ? 'scale-100' : 'scale-110'
-            }`}
-          />
-        </div>
+    <section className="relative w-full bg-white overflow-hidden" style={{ height: '100vh', position: 'relative', zIndex: 1 }}>
+      {/* Hero Image Container - Stable, No Parallax */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img
+          src={settings.heroImage}
+          alt="Fashion Hero"
+          onLoad={() => setImageLoaded(true)}
+          className="w-full h-full object-cover object-center"
+          style={{ objectFit: 'cover' }}
+        />
         {/* Dark overlay (30% opacity) for text readability */}
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
