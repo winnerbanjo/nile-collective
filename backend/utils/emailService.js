@@ -54,15 +54,9 @@ async function sendViaMailtrap({ to, subject, html, text }) {
 }
 
 /**
- * HTML template for order confirmation email
+ * Base luxury email template - clean white, black serif text, gold/black button
  */
-const getOrderConfirmationHTML = (order) => {
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
+const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', buttonUrl = '#') => {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -72,77 +66,109 @@ const getOrderConfirmationHTML = (order) => {
     }).format(price);
   };
 
+  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Confirmation - Nile Collective</title>
+      <title>${title} - Nile Collective</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+    <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <!-- Header -->
+          <td align="center" style="padding: 60px 20px;">
+            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
+              <!-- Logo / Header -->
               <tr>
-                <td style="padding: 40px 40px 20px; text-align: center; background-color: #000000; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 900; text-transform: lowercase; letter-spacing: 2px;">
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 700; color: #000000; letter-spacing: 3px; text-transform: lowercase;">
                     nile collective
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- Title -->
+              <tr>
+                <td style="padding: 0 0 30px; text-align: center;">
+                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                    ${title}
                   </h1>
                 </td>
               </tr>
               
-              <!-- Content -->
+              <!-- Message -->
               <tr>
-                <td style="padding: 40px;">
-                  <h2 style="margin: 0 0 20px; color: #000000; font-size: 24px; font-weight: 300; text-transform: uppercase; letter-spacing: 1px;">
-                    Thank you for shopping with Nile Collective
-                  </h2>
-                  
-                  <p style="margin: 0 0 30px; color: #666666; font-size: 16px; line-height: 1.6;">
-                    We've received your order and it's being processed. You'll receive another email once your order ships.
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; line-height: 1.8; color: #000000; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    ${message}
                   </p>
-                  
-                  <!-- Order Details -->
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0;">
+                </td>
+              </tr>
+              
+              <!-- Order Details -->
+              <tr>
+                <td style="padding: 0 0 40px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5;">
                     <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${order._id}</span>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <table role="presentation" style="width: 100%;">
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Order ID</td>
+                          </tr>
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order Date</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${orderDate}</span>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <table role="presentation" style="width: 100%;">
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Date</td>
+                          </tr>
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${orderDate}</td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Total Amount</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff;">
-                        <span style="color: #000000; font-size: 18px; font-weight: 600;">${formatPrice(order.totalAmount)}</span>
+                      <td style="padding: 20px 0;">
+                        <table role="presentation" style="width: 100%;">
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Total</td>
+                          </tr>
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400;">${formatPrice(order.totalAmount || 0)}</td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
-                  
-                  <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    If you have any questions about your order, please don't hesitate to contact us.
-                  </p>
+                </td>
+              </tr>
+              
+              <!-- Button -->
+              <tr>
+                <td style="padding: 0 0 50px; text-align: center;">
+                  <a href="${buttonUrl}" style="display: inline-block; padding: 16px 40px; background-color: #D4AF37; color: #000000; text-decoration: none; font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400;">
+                    ${buttonText}
+                  </a>
                 </td>
               </tr>
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 20px 40px; text-align: center; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                  <p style="margin: 0; color: #999999; font-size: 12px;">
+                <td style="padding: 40px 0 0; text-align: center; border-top: 1px solid #e5e5e5;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #999999; letter-spacing: 1px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -154,6 +180,21 @@ const getOrderConfirmationHTML = (order) => {
     </body>
     </html>
   `;
+};
+
+/**
+ * HTML template for order confirmation email (luxury design)
+ */
+const getOrderConfirmationHTML = (order) => {
+  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const message = 'Payment Received. We are preparing your luxury pieces.';
+  const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
+  return getLuxuryEmailBase('Order Confirmation', message, order, 'View Order', viewOrderUrl);
 };
 
 /**
@@ -304,15 +345,9 @@ const getAdminAlertHTML = (order) => {
 };
 
 /**
- * HTML template for bank transfer pending order email (customer)
+ * HTML template for bank transfer pending order email (luxury design with bank details)
  */
 const getBankTransferPendingHTML = (order) => {
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -321,14 +356,22 @@ const getBankTransferPendingHTML = (order) => {
       maximumFractionDigits: 0,
     }).format(price);
   };
+
+  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
   // Bank details - Update these with your actual bank details
   const bankDetails = {
-    bankName: 'Your Bank Name',
-    accountName: 'Nile Collective',
-    accountNumber: '1234567890',
-    // Add more bank details as needed
+    bankName: process.env.BANK_NAME || 'Your Bank Name',
+    accountName: process.env.BANK_ACCOUNT_NAME || 'Nile Collective',
+    accountNumber: process.env.BANK_ACCOUNT_NUMBER || '1234567890',
   };
+
+  const amount = formatPrice(order.totalAmount || 0);
+  const message = `We've received your order! It's currently pending. Please transfer ${amount} to complete your purchase.`;
 
   return `
     <!DOCTYPE html>
@@ -336,92 +379,102 @@ const getBankTransferPendingHTML = (order) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Received - Complete Payment - Nile Collective</title>
+      <title>Complete Payment - Nile Collective</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+    <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <!-- Header -->
+          <td align="center" style="padding: 60px 20px;">
+            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
+              <!-- Logo -->
               <tr>
-                <td style="padding: 40px 40px 20px; text-align: center; background-color: #000000; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 900; text-transform: lowercase; letter-spacing: 2px;">
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 700; color: #000000; letter-spacing: 3px; text-transform: lowercase;">
                     nile collective
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- Title -->
+              <tr>
+                <td style="padding: 0 0 30px; text-align: center;">
+                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                    Complete Your Payment
                   </h1>
                 </td>
               </tr>
               
-              <!-- Content -->
+              <!-- Message -->
               <tr>
-                <td style="padding: 40px;">
-                  <h2 style="margin: 0 0 20px; color: #000000; font-size: 24px; font-weight: 300; text-transform: uppercase; letter-spacing: 1px;">
-                    We've Received Your Order!
-                  </h2>
-                  
-                  <p style="margin: 0 0 30px; color: #666666; font-size: 16px; line-height: 1.6;">
-                    Thank you for your order! Please complete your bank transfer to finalize your purchase. Your order is currently <strong>PENDING verification</strong> and will be processed once we confirm your payment.
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; line-height: 1.8; color: #000000; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    ${message}
                   </p>
-                  
-                  <!-- Order Details -->
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0;">
+                </td>
+              </tr>
+              
+              <!-- Bank Details Box -->
+              <tr>
+                <td style="padding: 0 0 40px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse; border: 2px solid #D4AF37; background-color: #FFFEF7;">
                     <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${order._id}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order Date</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${orderDate}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Amount to Transfer</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 18px; font-weight: 600;">${formatPrice(order.totalAmount)}</span>
+                      <td style="padding: 30px;">
+                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                          <tr>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5;">Bank Name</td>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000; text-align: right; border-bottom: 1px solid #e5e5e5;">${bankDetails.bankName}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5;">Account Name</td>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000; text-align: right; border-bottom: 1px solid #e5e5e5;">${bankDetails.accountName}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase;">Account Number</td>
+                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400; text-align: right;">${bankDetails.accountNumber}</td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
-                  
-                  <!-- Bank Details -->
-                  <div style="background-color: #f9f9f9; padding: 30px; border-radius: 8px; margin-bottom: 30px; border: 2px solid #000000;">
-                    <h3 style="margin: 0 0 20px; color: #000000; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                      Bank Transfer Details
-                    </h3>
-                    <table role="presentation" style="width: 100%; border-collapse: collapse;">
-                      <tr>
-                        <td style="padding: 10px 0; color: #666666; font-size: 14px;"><strong>Bank Name:</strong></td>
-                        <td style="padding: 10px 0; color: #000000; font-size: 14px; text-align: right;">${bankDetails.bankName}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0; color: #666666; font-size: 14px;"><strong>Account Name:</strong></td>
-                        <td style="padding: 10px 0; color: #000000; font-size: 14px; text-align: right;">${bankDetails.accountName}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0; color: #666666; font-size: 14px;"><strong>Account Number:</strong></td>
-                        <td style="padding: 10px 0; color: #000000; font-size: 14px; text-align: right; font-weight: 600;">${bankDetails.accountNumber}</td>
-                      </tr>
-                    </table>
-                  </div>
-                  
-                  <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    After completing your transfer, please upload your payment receipt. We will verify your payment and update your order status. You'll receive an email confirmation once your payment is verified.
-                  </p>
+                </td>
+              </tr>
+              
+              <!-- Order Details -->
+              <tr>
+                <td style="padding: 0 0 40px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5;">
+                    <tr>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <table role="presentation" style="width: 100%;">
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Order ID</td>
+                          </tr>
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
+                        <table role="presentation" style="width: 100%;">
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Amount to Transfer</td>
+                          </tr>
+                          <tr>
+                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400;">${amount}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 20px 40px; text-align: center; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                  <p style="margin: 0; color: #999999; font-size: 12px;">
+                <td style="padding: 40px 0 0; text-align: center; border-top: 1px solid #e5e5e5;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #999999; letter-spacing: 1px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -436,253 +489,30 @@ const getBankTransferPendingHTML = (order) => {
 };
 
 /**
- * HTML template for official receipt email (when admin marks as paid)
+ * HTML template for official receipt email (luxury design)
  */
 const getOfficialReceiptHTML = (order) => {
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const itemsList = order.items.map(item => 
-    `<tr>
-      <td style="padding: 15px; border-bottom: 1px solid #e0e0e0; color: #000000; font-size: 14px;">${item.name}${item.size ? ` (${item.size})` : ''}${item.color ? ` - ${item.color}` : ''}</td>
-      <td style="padding: 15px; border-bottom: 1px solid #e0e0e0; text-align: center; color: #000000; font-size: 14px;">${item.quantity}</td>
-      <td style="padding: 15px; border-bottom: 1px solid #e0e0e0; text-align: right; color: #000000; font-size: 14px;">${formatPrice(item.price)}</td>
-      <td style="padding: 15px; border-bottom: 1px solid #e0e0e0; text-align: right; color: #000000; font-size: 14px; font-weight: 600;">${formatPrice(item.price * item.quantity)}</td>
-    </tr>`
-  ).join('');
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Payment Confirmed - Official Receipt - Nile Collective</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
-        <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <!-- Header -->
-              <tr>
-                <td style="padding: 40px 40px 20px; text-align: center; background-color: #000000; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 900; text-transform: lowercase; letter-spacing: 2px;">
-                    nile collective
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Content -->
-              <tr>
-                <td style="padding: 40px;">
-                  <h2 style="margin: 0 0 10px; color: #000000; font-size: 24px; font-weight: 300; text-transform: uppercase; letter-spacing: 1px;">
-                    Payment Confirmed ✨
-                  </h2>
-                  
-                  <p style="margin: 0 0 30px; color: #666666; font-size: 16px; line-height: 1.6;">
-                    Thank you! Your payment has been verified and your order is now being processed.
-                  </p>
-                  
-                  <!-- Receipt Details -->
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0;">
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${order._id}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order Date</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${orderDate}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Payment Method</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${order.paymentMethod || 'Bank Transfer'}</span>
-                      </td>
-                    </tr>
-                  </table>
-                  
-                  <!-- Items List -->
-                  <h3 style="margin: 0 0 20px; color: #000000; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                    Order Items
-                  </h3>
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0;">
-                    <thead>
-                      <tr style="background-color: #f9f9f9;">
-                        <th style="padding: 15px; text-align: left; color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #000000;">Item</th>
-                        <th style="padding: 15px; text-align: center; color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #000000;">Qty</th>
-                        <th style="padding: 15px; text-align: right; color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #000000;">Price</th>
-                        <th style="padding: 15px; text-align: right; color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #000000;">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${itemsList}
-                    </tbody>
-                    <tfoot>
-                      ${order.shippingFee > 0 ? `
-                      <tr>
-                        <td colspan="3" style="padding: 15px; text-align: right; color: #666666; font-size: 14px; border-top: 2px solid #e0e0e0;">Shipping Fee:</td>
-                        <td style="padding: 15px; text-align: right; color: #000000; font-size: 14px; font-weight: 600; border-top: 2px solid #e0e0e0;">${formatPrice(order.shippingFee)}</td>
-                      </tr>
-                      ` : ''}
-                      <tr>
-                        <td colspan="3" style="padding: 15px; text-align: right; color: #000000; font-size: 16px; font-weight: 600; border-top: 2px solid #000000;">Total Amount:</td>
-                        <td style="padding: 15px; text-align: right; color: #000000; font-size: 18px; font-weight: 600; border-top: 2px solid #000000;">${formatPrice(order.totalAmount)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                  
-                  <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Your order is now confirmed and will be processed shortly. You'll receive another email when your order ships.
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 20px 40px; text-align: center; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                  <p style="margin: 0; color: #999999; font-size: 12px;">
-                    © ${new Date().getFullYear()} Nile Collective. All rights reserved.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+  const message = 'Payment Received. We are preparing your luxury pieces.';
+  const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
+  return getLuxuryEmailBase('Payment Confirmed', message, order, 'View Order', viewOrderUrl);
 };
 
 /**
- * HTML template for shipping update email
+ * HTML template for shipping update email (luxury design with tracking)
  */
 const getShippingUpdateHTML = (order) => {
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const trackingNumber = order.trackingNumber || 'Will be provided soon';
+  const message = `Your style is on the way. Tracking: ${trackingNumber}.`;
+  const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
+  return getLuxuryEmailBase('Your Style is On The Way', message, order, 'Track Order', viewOrderUrl);
+};
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Shipped - Nile Collective</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
-        <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <!-- Header -->
-              <tr>
-                <td style="padding: 40px 40px 20px; text-align: center; background-color: #000000; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 900; text-transform: lowercase; letter-spacing: 2px;">
-                    nile collective
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Content -->
-              <tr>
-                <td style="padding: 40px;">
-                  <h2 style="margin: 0 0 20px; color: #000000; font-size: 24px; font-weight: 300; text-transform: uppercase; letter-spacing: 1px;">
-                    Your Order Has Been Shipped! 🚀
-                  </h2>
-                  
-                  <p style="margin: 0 0 30px; color: #666666; font-size: 16px; line-height: 1.6;">
-                    Great news! Your order has been shipped and is on its way to you. You can expect to receive it soon.
-                  </p>
-                  
-                  <!-- Order Details -->
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e0e0e0;">
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Order ID</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">${order._id}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Shipping Address</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0;">
-                        <span style="color: #000000; font-size: 14px;">
-                          ${order.shippingDetails?.name || ''}<br>
-                          ${order.shippingDetails?.address || ''}<br>
-                          ${order.shippingDetails?.city || ''}${order.shippingDetails?.state ? `, ${order.shippingDetails.state}` : ''}<br>
-                          ${order.shippingDetails?.country || ''}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 20px; background-color: #f9f9f9;">
-                        <strong style="color: #000000; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Total Amount</strong>
-                      </td>
-                      <td style="padding: 20px; background-color: #ffffff;">
-                        <span style="color: #000000; font-size: 18px; font-weight: 600;">${formatPrice(order.totalAmount)}</span>
-                      </td>
-                    </tr>
-                  </table>
-                  
-                  <p style="margin: 30px 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    You can track your order status anytime by visiting your account or contacting us if you have any questions.
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 20px 40px; text-align: center; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                  <p style="margin: 0; color: #999999; font-size: 12px;">
-                    © ${new Date().getFullYear()} Nile Collective. All rights reserved.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+/**
+ * HTML template for luxury status update (for Processing, Delivered, etc.)
+ */
+const getLuxuryStatusUpdateHTML = (order, newStatus, message) => {
+  const viewOrderUrl = `https://nilecollective.co/order/${order._id}`;
+  return getLuxuryEmailBase('Order Status Update', message, order, 'View Order', viewOrderUrl);
 };
 
 /**
@@ -691,9 +521,14 @@ const getShippingUpdateHTML = (order) => {
  */
 export const sendOrderConfirmationEmail = async (order) => {
   try {
+    const to = order.shippingDetails?.email;
+    if (!to) {
+      console.log('No customer email for order confirmation');
+      return false;
+    }
     const html = getOrderConfirmationHTML(order);
-    const text = `Thank you for shopping with Nile Collective!\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nWe've received your order and it's being processed.`;
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Order Confirmation - Nile Collective', html, text });
+    const text = `Payment Received. We are preparing your luxury pieces.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nThank you for shopping with Nile Collective.`;
+    return await sendViaMailtrap({ to, subject: 'Order Confirmation - Nile Collective', html, text });
   } catch (e) {
     console.error('sendOrderConfirmationEmail (non-blocking):', e?.message || e);
     return false;
@@ -721,18 +556,23 @@ export const sendAdminAlertEmail = async (order) => {
  */
 export const sendStatusUpdateEmail = async (order, newStatus) => {
   try {
+    const to = order.shippingDetails?.email;
+    if (!to) {
+      console.log('No customer email for status update');
+      return false;
+    }
     let html, subject, text;
     if (newStatus === 'Shipped') {
-      subject = 'Your Order Has Been Shipped - Nile Collective';
+      subject = 'Your Style is On The Way - Nile Collective';
       html = getShippingUpdateHTML(order);
-      text = `Great news! Your order has been shipped.\n\nOrder ID: ${order._id}\n\nYou can track your order status anytime.`;
+      text = `Your style is on the way. Tracking: ${order.trackingNumber || 'Will be provided soon'}.\n\nOrder ID: ${order._id}`;
     } else {
-      const msg = { Processing: 'Your order is now being processed.', Delivered: 'Your order has been delivered!', 'Pending Verification': 'We are verifying your payment.', paid: 'Your payment has been confirmed!', Paid: 'Your payment has been confirmed!' }[newStatus] || 'Your order status has been updated.';
+      const msg = { Processing: 'Payment Received. We are preparing your luxury pieces.', Delivered: 'Your order has been delivered!', 'Pending Verification': 'We are verifying your payment.', paid: 'Payment Received. We are preparing your luxury pieces.', Paid: 'Payment Received. We are preparing your luxury pieces.' }[newStatus] || 'Your order status has been updated.';
       subject = `Order Status Update - ${newStatus}`;
-      html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Order Status Update</h2><p>${msg}</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Status:</strong> ${newStatus}</p></body></html>`;
+      html = getLuxuryStatusUpdateHTML(order, newStatus, msg);
       text = `${msg}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`;
     }
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject, html, text });
+    return await sendViaMailtrap({ to, subject, html, text });
   } catch (e) {
     console.error('sendStatusUpdateEmail (non-blocking):', e?.message || e);
     return false;
@@ -745,9 +585,14 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
  */
 export const sendBankTransferPendingEmail = async (order) => {
   try {
+    const to = order.shippingDetails?.email;
+    if (!to) {
+      console.log('No customer email for bank transfer pending');
+      return false;
+    }
     const html = getBankTransferPendingHTML(order);
-    const text = `We've received your order! Please complete your bank transfer. Your order is PENDING verification.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
+    const text = `We've received your order! It's currently pending. Please transfer ₦${(order.totalAmount || 0).toLocaleString()} to complete your purchase.\n\nOrder ID: ${order._id}`;
+    return await sendViaMailtrap({ to, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
   } catch (e) {
     console.error('sendBankTransferPendingEmail (non-blocking):', e?.message || e);
     return false;
@@ -775,9 +620,14 @@ export const sendBankTransferAdminAlert = async (order) => {
  */
 export const sendOfficialReceiptEmail = async (order) => {
   try {
+    const to = order.shippingDetails?.email;
+    if (!to) {
+      console.log('No customer email for official receipt');
+      return false;
+    }
     const html = getOfficialReceiptHTML(order);
-    const text = `Payment Confirmed!\n\nYour payment has been verified.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nYou'll receive another email when your order ships.`;
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Payment Confirmed - Official Receipt - Nile Collective', html, text });
+    const text = `Payment Received. We are preparing your luxury pieces.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nYou'll receive another email when your order ships.`;
+    return await sendViaMailtrap({ to, subject: 'Payment Confirmed - Official Receipt - Nile Collective', html, text });
   } catch (e) {
     console.error('sendOfficialReceiptEmail (non-blocking):', e?.message || e);
     return false;
