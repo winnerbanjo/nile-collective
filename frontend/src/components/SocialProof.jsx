@@ -28,7 +28,7 @@ const SocialProof = () => {
     // Self-contained error handling - if this fails, component just won't show notifications
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`, {
+        const response = await axios.get('https://nile-backend-9wdk.onrender.com/api/products', {
           timeout: 5000 // 5 second timeout
         })
         if (Array.isArray(response.data) && response.data.length > 0) {

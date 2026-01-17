@@ -33,8 +33,8 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        console.log(`Fetching product from: ${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products/${id}`)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products/${id}`)
+        console.log(`Fetching product from: https://nile-backend-9wdk.onrender.com/api/products/${id}`)
+        const response = await axios.get(`https://nile-backend-9wdk.onrender.com/api/products/${id}`)
         console.log('Product fetched successfully:', response.data)
         setProduct(response.data)
         setError(null)
@@ -63,7 +63,7 @@ const ProductDetail = () => {
       
       try {
         setLoadingRelated(true)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
+        const response = await axios.get(`https://nile-backend-9wdk.onrender.com/api/products`)
         let related = []
         
         // Try to find products from same category
@@ -108,7 +108,7 @@ const ProductDetail = () => {
     const fetchReviews = async () => {
       if (!product?._id) return
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews/product/${product._id}`)
+        const response = await axios.get(`https://nile-backend-9wdk.onrender.com/api/reviews/product/${product._id}`)
         if (response.data?.success) {
           setReviews(response.data.reviews || [])
         }
@@ -126,7 +126,7 @@ const ProductDetail = () => {
     setSubmittingReview(true)
     try {
       const userId = localStorage.getItem('userId')
-      await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews`, {
+      await axios.post(`https://nile-backend-9wdk.onrender.com/api/reviews`, {
         productId: product._id,
         userId: userId || null,
         userName: reviewForm.userName,
@@ -138,7 +138,7 @@ const ProductDetail = () => {
       setReviewForm({ userName: '', userEmail: '', rating: 5, comment: '' })
       setShowReviewForm(false)
       // Refresh reviews
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews/product/${product._id}`)
+      const response = await axios.get(`https://nile-backend-9wdk.onrender.com/api/reviews/product/${product._id}`)
       if (response.data?.success) {
         setReviews(response.data.reviews || [])
       }

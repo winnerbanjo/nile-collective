@@ -85,7 +85,7 @@ const CartDrawer = () => {
 
     try {
       // Verify payment with backend
-      const verifyResponse = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders/verify`, {
+      const verifyResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/orders/verify`, {
         reference: response.reference,
         orderId: currentOrderId
       })
@@ -154,7 +154,7 @@ const CartDrawer = () => {
       const formData = new FormData()
       formData.append('image', receiptFile)
 
-      const uploadResponse = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/upload/image`, formData, {
+      const uploadResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/upload/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -187,7 +187,7 @@ const CartDrawer = () => {
       }
 
       // Creating manual order
-      const orderResponse = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders/manual`, orderData)
+      const orderResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/orders/manual`, orderData)
 
       if (orderResponse.data.success) {
         // Clear cart and redirect to success page
@@ -277,7 +277,7 @@ const CartDrawer = () => {
         }
       }
 
-      const orderResponse = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders`, orderData)
+      const orderResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/orders`, orderData)
       const newOrderId = orderResponse.data.orderId
       setOrderId(newOrderId)
 

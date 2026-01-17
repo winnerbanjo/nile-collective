@@ -27,7 +27,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
     const searchProducts = async () => {
       setLoading(true)
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
+        const response = await axios.get('https://nile-backend-9wdk.onrender.com/api/products')
         const filtered = response.data
           .filter(product =>
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

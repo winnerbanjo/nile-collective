@@ -30,14 +30,12 @@ const PORT = process.env.PORT || 5001;
 // ✅ UPDATED CORS: This allows your Vercel site to talk to this backend
 app.use(cors({
   origin: [
-    'https://nile-collective-ckji.vercel.app', 
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://127.0.0.1:3001'
+    'https://nile-collective.vercel.app',
+    'https://nile-collective-ckji.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-User-Id'],
   exposedHeaders: ['Content-Type'],
   optionsSuccessStatus: 200
 }));

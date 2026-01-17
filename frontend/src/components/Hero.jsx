@@ -16,8 +16,8 @@ const Hero = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        console.log('Fetching settings from:', `${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/settings`)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/settings`)
+        console.log('Fetching settings from:', 'https://nile-backend-9wdk.onrender.com/api/settings')
+        const response = await axios.get('https://nile-backend-9wdk.onrender.com/api/settings')
         if (response.data) {
           const newSettings = {
             heroImage: response.data.heroImage || '',

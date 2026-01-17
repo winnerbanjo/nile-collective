@@ -12,7 +12,7 @@ const ShopAll = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
+        const response = await axios.get('https://nile-backend-9wdk.onrender.com/api/products')
         setProducts(response.data)
         setError(null)
       } catch (err) {

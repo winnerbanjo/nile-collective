@@ -14,8 +14,8 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('Fetching products from:', `${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
+        console.log('Fetching products from:', 'https://nile-backend-9wdk.onrender.com/api/products')
+        const response = await axios.get('https://nile-backend-9wdk.onrender.com/api/products')
         console.log('Products fetched successfully:', response.data)
         setProducts(response.data)
         setError(null)

@@ -25,7 +25,7 @@ const Footer = () => {
 
       // Optional: Send to backend if endpoint exists
       try {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/newsletter/subscribe`, { email })
+        await axios.post(`https://nile-backend-9wdk.onrender.com/api/newsletter/subscribe`, { email })
       } catch (error) {
         console.log('Newsletter subscription saved locally')
       }
