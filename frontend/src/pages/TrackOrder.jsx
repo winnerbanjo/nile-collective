@@ -7,7 +7,9 @@ import { formatNaira } from '../utils/formatPrice'
 const TrackOrder = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [orderId, setOrderId] = useState(searchParams.get('id') || '')
+  // Use orderId from URL params, fallback to 'id' for backwards compatibility
+  const orderIdFromUrl = searchParams.get('orderId') || searchParams.get('id') || ''
+  const [orderId, setOrderId] = useState(orderIdFromUrl)
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -24,7 +26,7 @@ const TrackOrder = () => {
     try {
       const response = await axios.get(`https://nile-backend-9wdk.onrender.com/api/orders/${id}`)
       setOrder(response.data)
-      setSearchParams({ id })
+      setSearchParams({ orderId: id })
     } catch (err) {
       console.error('Error fetching order:', err)
       setError('Order not found. Please check your order number and try again.')
@@ -39,13 +41,17 @@ const TrackOrder = () => {
     fetchOrder(orderId.trim())
   }
 
-  // Auto-search if ID is in URL on mount
+  // Auto-fetch if orderId exists in URL on mount
   useEffect(() => {
-    const idFromUrl = searchParams.get('id')
-    if (idFromUrl && idFromUrl !== orderId) {
-      setOrderId(idFromUrl)
-      fetchOrder(idFromUrl)
+    const orderIdFromParams = searchParams.get('orderId') || searchParams.get('id')
+    if (orderIdFromParams && orderIdFromParams.trim() !== '') {
+      // Only fetch if we don't already have this order loaded
+      if (!order || order._id !== orderIdFromParams) {
+        setOrderId(orderIdFromParams)
+        fetchOrder(orderIdFromParams)
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Status stepper configuration

@@ -184,7 +184,7 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
  */
 const getOrderConfirmationHTML = (order) => {
   const message = 'Thank you for your order! We are preparing your pieces and will notify you once they ship.';
-  const viewOrderUrl = `https://nilecollective.co/track-order?id=${order._id}`;
+  const viewOrderUrl = `https://nilecollective.co/track-order?orderId=${order._id}`;
   return getLuxuryEmailBase('Order Confirmation', message, order, 'View Order', viewOrderUrl);
 };
 
@@ -476,7 +476,7 @@ const getBankTransferPendingHTML = (order) => {
               <!-- Button - Solid black, left-aligned -->
               <tr>
                 <td style="padding: 0 0 60px; text-align: left;">
-                  <a href="https://nilecollective.co/track-order?id=${order._id}" style="display: inline-block; padding: 16px 40px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;">
+                  <a href="https://nilecollective.co/track-order?orderId=${order._id}" style="display: inline-block; padding: 16px 40px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;">
                     View Order
                   </a>
                 </td>
@@ -511,7 +511,7 @@ const getBankTransferPendingHTML = (order) => {
  */
 const getOfficialReceiptHTML = (order) => {
   const message = 'Payment Received. We are preparing your luxury pieces.';
-  const viewOrderUrl = `https://nilecollective.co/track-order?id=${order._id}`;
+  const viewOrderUrl = `https://nilecollective.co/track-order?orderId=${order._id}`;
   return getLuxuryEmailBase('Payment Confirmed', message, order, 'View Order', viewOrderUrl);
 };
 
@@ -521,7 +521,7 @@ const getOfficialReceiptHTML = (order) => {
 const getShippingUpdateHTML = (order) => {
   const trackingNumber = order.trackingNumber || 'Will be provided soon';
   const message = `Your Nile pieces are on the way! Tracking number: ${trackingNumber}.`;
-  const viewOrderUrl = `https://nilecollective.co/track-order?id=${order._id}`;
+  const viewOrderUrl = `https://nilecollective.co/track-order?orderId=${order._id}`;
   return getLuxuryEmailBase('Your Nile Pieces are on the Way', message, order, 'Track Order', viewOrderUrl);
 };
 
@@ -529,7 +529,7 @@ const getShippingUpdateHTML = (order) => {
  * HTML template for status update (for Processing, Delivered, etc.)
  */
 const getLuxuryStatusUpdateHTML = (order, newStatus, message) => {
-  const viewOrderUrl = `https://nilecollective.co/track-order?id=${order._id}`;
+  const viewOrderUrl = `https://nilecollective.co/track-order?orderId=${order._id}`;
   let title = 'Order Update';
   if (newStatus === 'Delivered') {
     title = 'Delivered: Your Nile Collective Style';
