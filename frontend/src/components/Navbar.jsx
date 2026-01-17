@@ -1,15 +1,20 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { User, ShoppingBag, Search } from 'lucide-react'
+import { User, ShoppingBag, Search, ChevronDown } from 'lucide-react'
 import { useCart } from '../context/CartContext'
+import { useCurrency } from '../context/CurrencyContext'
 import SearchResultsDropdown from './SearchResultsDropdown'
 
 const Navbar = () => {
   const { getCartItemCount, setIsDrawerOpen } = useCart()
+  const { currency, setCurrency } = useCurrency()
   const cartItemCount = getCartItemCount()
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const searchRef = useRef(null)
+  const currencyDesktopRef = useRef(null)
+  const currencyMobileRef = useRef(null)
 
   // User icon click - links to account/dashboard
   const handleUserIconClick = () => {
@@ -18,6 +23,31 @@ const Navbar = () => {
     } catch (error) {
       console.error('Navigation error:', error)
     }
+  }
+
+  // Close currency dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isOutsideDesktop = currencyDesktopRef.current && !currencyDesktopRef.current.contains(event.target)
+      const isOutsideMobile = currencyMobileRef.current && !currencyMobileRef.current.contains(event.target)
+      if (isOutsideDesktop && isOutsideMobile) {
+        setIsCurrencyOpen(false)
+      }
+    }
+    if (isCurrencyOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isCurrencyOpen])
+
+  const currencyOptions = [
+    { code: 'NGN', symbol: '₦', label: 'NGN' },
+    { code: 'USD', symbol: '$', label: 'USD' }
+  ]
+
+  const handleCurrencyChange = (newCurrency) => {
+    setCurrency(newCurrency)
+    setIsCurrencyOpen(false)
   }
 
   return (
@@ -94,6 +124,36 @@ const Navbar = () => {
 
             {/* Icons - Absolute Right */}
             <div className="flex items-center space-x-4 flex-shrink-0 ml-auto">
+              {/* Currency Switcher - Desktop */}
+              <div className="hidden lg:block relative" ref={currencyDesktopRef}>
+                <button
+                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                  className="flex items-center space-x-1 text-black hover:text-gray-600 transition-colors text-sm font-light uppercase tracking-wider"
+                  aria-label="Currency"
+                >
+                  <span>{currencyOptions.find(opt => opt.code === currency)?.symbol || '₦'}</span>
+                  <span className="text-xs">{currency}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isCurrencyOpen && (
+                  <div className="absolute right-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    {currencyOptions.map((option) => (
+                      <button
+                        key={option.code}
+                        onClick={() => handleCurrencyChange(option.code)}
+                        className={`w-full text-left px-3 py-2 text-sm font-light uppercase tracking-wider transition-colors ${
+                          currency === option.code
+                            ? 'bg-black text-white'
+                            : 'text-black hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="mr-2">{option.symbol}</span>
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {/* Search Icon - Mobile Only */}
               <button
                 onClick={() => {
@@ -159,7 +219,7 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 items-center">
               <Link
                 to="/shop"
                 className="text-black hover:text-gray-600 text-sm font-light transition-colors uppercase tracking-wider"
@@ -184,6 +244,36 @@ const Navbar = () => {
               >
                 About
               </Link>
+              {/* Currency Switcher - Mobile */}
+              <div className="relative" ref={currencyMobileRef}>
+                <button
+                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                  className="flex items-center space-x-1 text-black hover:text-gray-600 transition-colors text-sm font-light uppercase tracking-wider"
+                  aria-label="Currency"
+                >
+                  <span>{currencyOptions.find(opt => opt.code === currency)?.symbol || '₦'}</span>
+                  <span>{currency}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isCurrencyOpen && (
+                  <div className="absolute left-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    {currencyOptions.map((option) => (
+                      <button
+                        key={option.code}
+                        onClick={() => handleCurrencyChange(option.code)}
+                        className={`w-full text-left px-3 py-2 text-sm font-light uppercase tracking-wider transition-colors ${
+                          currency === option.code
+                            ? 'bg-black text-white'
+                            : 'text-black hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="mr-2">{option.symbol}</span>
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
