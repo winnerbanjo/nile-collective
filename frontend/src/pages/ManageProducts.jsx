@@ -39,7 +39,7 @@ const ManageProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
       // Ensure products is always an array
       const productsData = Array.isArray(response.data) ? response.data : []
       setProducts(productsData)
@@ -157,7 +157,7 @@ const ManageProducts = () => {
     try {
       const formData = new FormData()
       formData.append('image', file)
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/upload/image`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/upload/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -236,14 +236,14 @@ const ManageProducts = () => {
       }
 
       if (editingId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products/${editingId}`, productData)
+        await axios.put(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products/${editingId}`, productData)
         setMessage({
           type: 'success',
           text: 'Product updated successfully!'
         })
         setEditingId(null)
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`, productData)
+        await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`, productData)
         setMessage({
           type: 'success',
           text: 'Product created successfully!'
@@ -321,7 +321,7 @@ const ManageProducts = () => {
 
     setDeletingId(productId)
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products/${productId}`)
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products/${productId}`)
       fetchProducts()
       setMessage({
         type: 'success',

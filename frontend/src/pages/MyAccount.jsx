@@ -22,7 +22,7 @@ const MyAccount = () => {
     const fetchOrders = async () => {
       try {
         const userId = localStorage.getItem('userId')
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders/myorders`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders/myorders`, {
           headers: {
             'X-User-Id': userId
           }

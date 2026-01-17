@@ -43,7 +43,7 @@ const Admin = () => {
   // Fetch all products and settings
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
       setProducts(response.data)
       setLoading(false)
     } catch (error) {
@@ -54,7 +54,7 @@ const Admin = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/settings`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/settings`)
       setHeroData({
         heroImage: null,
         heroImageUrl: '',
@@ -185,10 +185,10 @@ const Admin = () => {
       formData.append('image', file) // Field name 'image' matches backend upload.single('image')
       
       console.log('FormData created with field name: image')
-      console.log('Uploading to:', `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/upload/image`)
+      console.log('Uploading to:', `${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/upload/image`)
 
       // Don't set Content-Type header - axios will set it automatically with the correct boundary
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/upload/image`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/upload/image`, formData, {
         timeout: 60000, // 60 second timeout for slow connections
         headers: {
           // Let axios set Content-Type automatically for multipart/form-data
@@ -272,7 +272,7 @@ const Admin = () => {
         })) : []
       }
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`, productData)
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`, productData)
       
       setMessage({
         type: 'success',
@@ -359,10 +359,10 @@ const Admin = () => {
       }
 
       console.log('Sending settings data to backend:', settingsData)
-      console.log('Request URL:', `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/settings`)
+      console.log('Request URL:', `${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/settings`)
       console.log('Request method: PUT')
       
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/settings`, settingsData, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/settings`, settingsData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -416,7 +416,7 @@ const Admin = () => {
 
     setDeletingId(productId)
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products/${productId}`)
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products/${productId}`)
       
       // Refresh products list
       fetchProducts()

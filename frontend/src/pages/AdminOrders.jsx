@@ -33,10 +33,10 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log(`Fetching orders from: ${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders`)
+      console.log(`Fetching orders from: ${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders`)
       setLoading(true)
       setError(null)
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders`)
       console.log('Orders API response:', response.data)
       
       // Handle both response structures: { success, orders } or direct array
@@ -70,7 +70,7 @@ const AdminOrders = () => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       setUpdatingStatus(orderId)
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders/${orderId}/status`, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/orders/${orderId}/status`, {
         status: newStatus
       })
 

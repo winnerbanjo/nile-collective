@@ -14,7 +14,7 @@ const AdminReviews = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/reviews`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews`)
       if (response.data?.success) {
         setReviews(response.data.reviews || [])
       } else {
@@ -30,7 +30,7 @@ const AdminReviews = () => {
 
   const handleApprove = async (reviewId) => {
     try {
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/reviews/${reviewId}/approve`)
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews/${reviewId}/approve`)
       if (response.data?.success) {
         setReviews(reviews?.map(r => r._id === reviewId ? { ...r, isApproved: true } : r))
       }
@@ -44,7 +44,7 @@ const AdminReviews = () => {
     if (!window.confirm('Are you sure you want to delete this review?')) return
     
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/reviews/${reviewId}`)
+      const response = await axios.delete(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/reviews/${reviewId}`)
       if (response.data?.success) {
         setReviews(reviews?.filter(r => r._id !== reviewId))
       }

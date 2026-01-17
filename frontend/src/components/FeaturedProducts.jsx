@@ -12,7 +12,7 @@ const FeaturedProducts = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://nile-backend-9wdk.onrender.com'}/api/products`)
         // Get only featured products, sorted by newest first, limit to 3
         const featured = response.data
           .filter(p => p.isFeatured === true)
