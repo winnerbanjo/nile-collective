@@ -5,7 +5,7 @@ const API_BASE_URL = 'https://nile-backend-9wdk.onrender.com'
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // 30 seconds timeout for Render server
   headers: {
     'Content-Type': 'application/json'
   }

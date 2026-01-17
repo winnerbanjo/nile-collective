@@ -128,18 +128,21 @@ router.post('/', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send order confirmation email (don't let email errors break order creation)
-    try {
-      await sendOrderConfirmationEmail(savedOrder);
-    } catch (emailError) {
-      console.error('Error sending order confirmation email (non-blocking):', emailError);
-      // Continue even if email fails
-    }
-
+    // Send response immediately - don't wait for email
     res.status(201).json({
       success: true,
       orderId: savedOrder._id,
       order: savedOrder
+    });
+
+    // Send order confirmation email in background (non-blocking, after response)
+    setImmediate(async () => {
+      try {
+        await sendOrderConfirmationEmail(savedOrder);
+      } catch (emailError) {
+        console.error('Error sending order confirmation email (non-blocking):', emailError);
+        // Email failure doesn't affect order creation
+      }
     });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -204,20 +207,6 @@ router.post('/verify', async (req, res) => {
       order.paymentReference = reference;
       await order.save();
 
-      // Send order confirmation email to customer (non-blocking)
-      try {
-        await sendOrderConfirmationEmail(order);
-      } catch (emailError) {
-        console.error('Error sending order confirmation email (non-blocking):', emailError);
-      }
-
-      // Send admin alert email (non-blocking)
-      try {
-        await sendAdminAlertEmail(order);
-      } catch (emailError) {
-        console.error('Error sending admin alert email (non-blocking):', emailError);
-      }
-
       // Reduce stock for each item in the order
       for (const item of order.items) {
         const product = await Product.findById(item.productId);
@@ -237,10 +226,28 @@ router.post('/verify', async (req, res) => {
         }
       }
 
+      // Send response immediately - don't wait for emails
       res.json({
         success: true,
         message: 'Payment verified successfully',
         order: order
+      });
+
+      // Send emails in background (non-blocking, after response)
+      setImmediate(async () => {
+        // Send order confirmation email to customer
+        try {
+          await sendOrderConfirmationEmail(order);
+        } catch (emailError) {
+          console.error('Error sending order confirmation email (non-blocking):', emailError);
+        }
+
+        // Send admin alert email
+        try {
+          await sendAdminAlertEmail(order);
+        } catch (emailError) {
+          console.error('Error sending admin alert email (non-blocking):', emailError);
+        }
       });
     } else {
       // Payment failed
@@ -312,27 +319,29 @@ router.post('/manual', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send bank transfer pending email to customer (don't let email errors break order creation)
-    try {
-      await sendBankTransferPendingEmail(savedOrder);
-    } catch (emailError) {
-      console.error('Error sending bank transfer pending email (non-blocking):', emailError);
-      // Continue even if email fails
-    }
-
-    // Send admin alert for bank transfer order (don't let email errors break order creation)
-    try {
-      await sendBankTransferAdminAlert(savedOrder);
-    } catch (emailError) {
-      console.error('Error sending bank transfer admin alert (non-blocking):', emailError);
-      // Continue even if email fails
-    }
-
+    // Send response immediately - don't wait for emails
     res.status(201).json({
       success: true,
       orderId: savedOrder._id,
       order: savedOrder,
       message: 'Order received! We will verify your transfer and start processing your luxury items immediately.'
+    });
+
+    // Send emails in background (non-blocking, after response)
+    setImmediate(async () => {
+      // Send bank transfer pending email to customer
+      try {
+        await sendBankTransferPendingEmail(savedOrder);
+      } catch (emailError) {
+        console.error('Error sending bank transfer pending email (non-blocking):', emailError);
+      }
+
+      // Send admin alert for bank transfer order
+      try {
+        await sendBankTransferAdminAlert(savedOrder);
+      } catch (emailError) {
+        console.error('Error sending bank transfer admin alert (non-blocking):', emailError);
+      }
     });
   } catch (error) {
     console.error('Error creating manual order:', error);
