@@ -12,7 +12,7 @@ const ShopAll = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/products')
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`)
         setProducts(response.data)
         setError(null)
       } catch (err) {

@@ -14,7 +14,7 @@ const TrackOrder = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/api/orders/${id}`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders/${id}`)
         setOrder(response.data)
         setError(null)
       } catch (err) {

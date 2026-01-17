@@ -22,7 +22,7 @@ const MyAccount = () => {
     const fetchOrders = async () => {
       try {
         const userId = localStorage.getItem('userId')
-        const response = await axios.get(`http://localhost:5001/api/orders/myorders`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders/myorders`, {
           headers: {
             'X-User-Id': userId
           }

@@ -16,8 +16,8 @@ const Hero = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        console.log('Fetching settings from: http://localhost:5001/api/settings')
-        const response = await axios.get('http://localhost:5001/api/settings')
+        console.log('Fetching settings from:', `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/settings`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/settings`)
         if (response.data) {
           const newSettings = {
             heroImage: response.data.heroImage || '',

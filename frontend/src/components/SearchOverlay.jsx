@@ -27,7 +27,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
     const searchProducts = async () => {
       setLoading(true)
       try {
-        const response = await axios.get('http://localhost:5001/api/products')
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/products`)
         const filtered = response.data
           .filter(product =>
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

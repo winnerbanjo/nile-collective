@@ -43,7 +43,7 @@ export const CartProvider = ({ children }) => {
 
   const loadUserCart = async (userId) => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/users/${userId}/cart`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/${userId}/cart`)
       if (response.data?.success && Array.isArray(response.data.cart)) {
         setCartItems(response.data.cart)
         localStorage.setItem('cart', JSON.stringify(response.data.cart))
@@ -66,7 +66,7 @@ export const CartProvider = ({ children }) => {
     const userId = localStorage.getItem('userId')
     if (userId) {
       try {
-        await axios.put(`http://localhost:5001/api/users/${userId}/cart`, {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/${userId}/cart`, {
           cart: items
         })
       } catch (error) {
