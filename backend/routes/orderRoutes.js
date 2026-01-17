@@ -204,11 +204,19 @@ router.post('/verify', async (req, res) => {
       order.paymentReference = reference;
       await order.save();
 
-      // Send order confirmation email to customer
-      await sendOrderConfirmationEmail(order);
+      // Send order confirmation email to customer (non-blocking)
+      try {
+        await sendOrderConfirmationEmail(order);
+      } catch (emailError) {
+        console.error('Error sending order confirmation email (non-blocking):', emailError);
+      }
 
-      // Send admin alert email
-      await sendAdminAlertEmail(order);
+      // Send admin alert email (non-blocking)
+      try {
+        await sendAdminAlertEmail(order);
+      } catch (emailError) {
+        console.error('Error sending admin alert email (non-blocking):', emailError);
+      }
 
       // Reduce stock for each item in the order
       for (const item of order.items) {
@@ -378,13 +386,21 @@ router.put('/:id/status', async (req, res) => {
 
     // Special handling: When admin manually changes from 'Pending Verification' to 'paid', send official receipt
     if (previousStatus === 'Pending Verification' && status === 'paid') {
-      await sendOfficialReceiptEmail(order);
-      console.log(`✅ Official receipt email sent for order ${order._id} (status changed from ${previousStatus} to ${status})`);
+      try {
+        await sendOfficialReceiptEmail(order);
+        console.log(`✅ Official receipt email sent for order ${order._id} (status changed from ${previousStatus} to ${status})`);
+      } catch (emailError) {
+        console.error('Error sending official receipt email (non-blocking):', emailError);
+      }
     } else {
-      // Send status update email for all other relevant statuses
+      // Send status update email for all other relevant statuses (non-blocking)
       const statusesToEmail = ['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'];
       if (statusesToEmail.includes(status)) {
-        await sendStatusUpdateEmail(order, status);
+        try {
+          await sendStatusUpdateEmail(order, status);
+        } catch (emailError) {
+          console.error('Error sending status update email (non-blocking):', emailError);
+        }
       }
     }
 

@@ -5,23 +5,32 @@ const EMAIL_USER = 'technile0@gmail.com';
 const EMAIL_PASSWORD = 'ozqy moca kthh arrm';
 const ADMIN_EMAIL = 'technile0@gmail.com';
 
-// Create Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASSWORD
-  }
-});
+// Create Nodemailer transporter with error handling
+let transporter;
+try {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASSWORD
+    }
+  });
 
-// Verify transporter configuration
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error);
-  } else {
-    console.log('✅ Email transporter is ready to send emails');
-  }
-});
+  // Verify transporter configuration (non-blocking, won't crash server)
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ Email transporter error (non-blocking):', error);
+      console.error('Email functionality may be limited, but server will continue running');
+    } else {
+      console.log('✅ Email transporter is ready to send emails');
+    }
+  });
+} catch (error) {
+  console.error('❌ Error initializing email transporter (non-blocking):', error);
+  console.error('Email functionality will be disabled, but server will continue running');
+  // Create a dummy transporter that won't crash
+  transporter = null;
+}
 
 /**
  * HTML template for order confirmation email
@@ -660,6 +669,11 @@ const getShippingUpdateHTML = (order) => {
  */
 export const sendOrderConfirmationEmail = async (order) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const customerEmail = order.shippingDetails?.email;
     if (!customerEmail) {
       console.log('No email provided for order confirmation');
@@ -688,6 +702,11 @@ export const sendOrderConfirmationEmail = async (order) => {
  */
 export const sendAdminAlertEmail = async (order) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const mailOptions = {
       from: `"Nile Collective" <${EMAIL_USER}>`,
       to: ADMIN_EMAIL,
@@ -710,6 +729,11 @@ export const sendAdminAlertEmail = async (order) => {
  */
 export const sendStatusUpdateEmail = async (order, newStatus) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const customerEmail = order.shippingDetails?.email;
     if (!customerEmail) {
       console.log('No email provided for status update');
@@ -779,6 +803,11 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
  */
 export const sendBankTransferPendingEmail = async (order) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const customerEmail = order.shippingDetails?.email;
     if (!customerEmail) {
       console.log('No email provided for bank transfer pending notification');
@@ -807,6 +836,11 @@ export const sendBankTransferPendingEmail = async (order) => {
  */
 export const sendBankTransferAdminAlert = async (order) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const mailOptions = {
       from: `"Nile Collective" <${EMAIL_USER}>`,
       to: ADMIN_EMAIL,
@@ -846,6 +880,11 @@ export const sendBankTransferAdminAlert = async (order) => {
  */
 export const sendOfficialReceiptEmail = async (order) => {
   try {
+    if (!transporter) {
+      console.error('Email transporter not initialized. Skipping email send.');
+      return false;
+    }
+
     const customerEmail = order.shippingDetails?.email;
     if (!customerEmail) {
       console.log('No email provided for official receipt');
