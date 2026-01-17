@@ -1,58 +1,54 @@
-// import nodemailer from 'nodemailer'; // SMTP disabled - Render blocks SMTP ports
+import axios from 'axios';
 
-// Email configuration - use process.env.EMAIL_USER, process.env.EMAIL_PASS, process.env.ADMIN_EMAIL only (no hardcoded secrets)
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASSWORD = process.env.EMAIL_PASS;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+// Mailtrap Email API (HTTPS, port 443) - works on Render. No SMTP.
+const MAILTRAP_TOKEN = process.env.MAILTRAP_TOKEN;
+const FROM_EMAIL = 'hello@demomailtrap.com';
+const FROM_NAME = 'Nile Collective';
+const MAILTRAP_URL = 'https://send.api.mailtrap.io/api/send';
 
-// NODEMAILER SMTP DISABLED - Render blocks SMTP ports
-// TODO: Switch to Brevo API or similar email service
-// For now, all emails are logged to console for production monitoring
-
-// Create Nodemailer transporter with error handling (initialized once at module load)
-// COMMENTED OUT - SMTP blocked by Render
-/*
-let transporter;
-try {
-  if (!EMAIL_USER || !EMAIL_PASSWORD) {
-    console.warn('⚠️ EMAIL_USER or EMAIL_PASS environment variables not set. Email functionality will be disabled.');
-    transporter = null;
-  } else {
-    transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // true for 465, false for other ports
-      auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASSWORD
-      },
-      pool: true, // Keep connection open to prevent timeouts on cloud hosts like Render
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000, // 10 seconds
-      socketTimeout: 10000 // 10 seconds
-    });
-
-    // Verify transporter configuration (non-blocking, won't crash server)
-    transporter.verify((error, success) => {
-      if (error) {
-        console.error('❌ Email transporter error (non-blocking):', error);
-        console.error('Email functionality may be limited, but server will continue running');
-      } else {
-        console.log('✅ Email transporter is ready to send emails');
-      }
-    });
-  }
-} catch (error) {
-  console.error('❌ Error initializing email transporter (non-blocking):', error);
-  console.error('Email functionality will be disabled, but server will continue running');
-  // Create a dummy transporter that won't crash
-  transporter = null;
+if (!MAILTRAP_TOKEN) {
+  console.warn('⚠️ MAILTRAP_TOKEN not set. Emails will be logged only.');
 }
-*/
-const transporter = null; // SMTP disabled - using console logging instead
+
+/**
+ * Send one email via Mailtrap API. Never throws; log and return on error.
+ * @param {{ to: string, subject: string, html: string, text?: string }} opts
+ */
+async function sendViaMailtrap({ to, subject, html, text }) {
+  try {
+    if (!to || !subject) return false;
+    if (!MAILTRAP_TOKEN) {
+      console.log('Email would have been sent to:', to, 'subject:', subject);
+      return false;
+    }
+    const res = await axios.post(
+      MAILTRAP_URL,
+      {
+        from: { email: FROM_EMAIL, name: FROM_NAME },
+        to: [{ email: to }],
+        subject,
+        html: html || '',
+        text: text || (subject + '\n\n' + (html || '').replace(/<[^>]+>/g, ' ').slice(0, 500))
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': MAILTRAP_TOKEN
+        },
+        timeout: 15000
+      }
+    );
+    if (res.status >= 200 && res.status < 300) {
+      console.log('✅ Mailtrap sent to', to);
+      return true;
+    }
+    console.error('Mailtrap API error:', res.status, res.data);
+    return false;
+  } catch (err) {
+    console.error('Mailtrap send error (non-blocking):', err?.message || err);
+    return false;
+  }
+}
 
 /**
  * HTML template for order confirmation email
@@ -687,99 +683,129 @@ const getShippingUpdateHTML = (order) => {
 };
 
 /**
- * Send order confirmation email to customer
- * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
+ * Send order confirmation email to customer.
+ * Wrapped in try/catch so it never crashes checkout.
  */
 export const sendOrderConfirmationEmail = async (order) => {
-  const to = order.shippingDetails?.email;
-  if (!to) {
-    console.log('No email provided for order confirmation');
+  try {
+    const to = order.shippingDetails?.email;
+    if (!to) return false;
+    const html = getOrderConfirmationHTML(order);
+    const text = `Thank you for shopping with Nile Collective!\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nWe've received your order and it's being processed.`;
+    return await sendViaMailtrap({ to, subject: 'Order Confirmation - Nile Collective', html, text });
+  } catch (e) {
+    console.error('sendOrderConfirmationEmail (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send admin alert email when payment is successful
- * SMTP disabled - console log only. Use process.env.EMAIL_USER / process.env.ADMIN_EMAIL when adding Brevo/API.
+ * Send admin alert email when payment is successful.
+ * Wrapped in try/catch so it never crashes checkout.
  */
 export const sendAdminAlertEmail = async (order) => {
-  const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-  if (!to) {
-    console.log('No admin email configured (ADMIN_EMAIL or EMAIL_USER)');
+  try {
+    const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+    if (!to) return false;
+    const html = getAdminAlertHTML(order);
+    const text = `New Order Received!\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
+    return await sendViaMailtrap({ to, subject: '🚀 New Order Received - Nile Collective', html, text });
+  } catch (e) {
+    console.error('sendAdminAlertEmail (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send order status update email to customer
- * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
+ * Send order status update email to customer.
+ * Wrapped in try/catch so it never crashes.
  */
 export const sendStatusUpdateEmail = async (order, newStatus) => {
-  const to = order.shippingDetails?.email;
-  if (!to) {
-    console.log('No email provided for status update');
+  try {
+    const to = order.shippingDetails?.email;
+    if (!to) return false;
+    let html, subject, text;
+    if (newStatus === 'Shipped') {
+      subject = 'Your Order Has Been Shipped - Nile Collective';
+      html = getShippingUpdateHTML(order);
+      text = `Great news! Your order has been shipped.\n\nOrder ID: ${order._id}\n\nYou can track your order status anytime.`;
+    } else {
+      const msg = { Processing: 'Your order is now being processed.', Delivered: 'Your order has been delivered!', 'Pending Verification': 'We are verifying your payment.', paid: 'Your payment has been confirmed!', Paid: 'Your payment has been confirmed!' }[newStatus] || 'Your order status has been updated.';
+      subject = `Order Status Update - ${newStatus}`;
+      html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Order Status Update</h2><p>${msg}</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Status:</strong> ${newStatus}</p></body></html>`;
+      text = `${msg}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`;
+    }
+    return await sendViaMailtrap({ to, subject, html, text });
+  } catch (e) {
+    console.error('sendStatusUpdateEmail (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send bank transfer pending email to customer
- * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
+ * Send bank transfer pending email to customer.
+ * Wrapped in try/catch so it never crashes checkout.
  */
 export const sendBankTransferPendingEmail = async (order) => {
-  const to = order.shippingDetails?.email;
-  if (!to) {
-    console.log('No email provided for bank transfer pending notification');
+  try {
+    const to = order.shippingDetails?.email;
+    if (!to) return false;
+    const html = getBankTransferPendingHTML(order);
+    const text = `We've received your order! Please complete your bank transfer. Your order is PENDING verification.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
+    return await sendViaMailtrap({ to, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
+  } catch (e) {
+    console.error('sendBankTransferPendingEmail (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send admin alert for bank transfer order
- * SMTP disabled - console log only. Use process.env.ADMIN_EMAIL or process.env.EMAIL_USER when adding Brevo/API.
+ * Send admin alert for bank transfer order.
+ * Wrapped in try/catch so it never crashes checkout.
  */
 export const sendBankTransferAdminAlert = async (order) => {
-  const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-  if (!to) {
-    console.log('No admin email configured (ADMIN_EMAIL or EMAIL_USER)');
+  try {
+    const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+    if (!to) return false;
+    const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>New Transfer Order Pending</h2><p>A new bank transfer order has been received. Check your bank app.</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Customer:</strong> ${order.shippingDetails?.name || 'N/A'}</p><p><strong>Amount:</strong> ₦${(order.totalAmount || 0).toLocaleString()}</p><p><strong>Receipt:</strong> <a href="${order.receiptUrl || '#'}">View</a></p></body></html>`;
+    const text = `New Transfer Order Pending\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nAmount: ₦${(order.totalAmount || 0).toLocaleString()}\nReceipt: ${order.receiptUrl || ''}`;
+    return await sendViaMailtrap({ to, subject: 'New Transfer Order Pending - Check your bank app', html, text });
+  } catch (e) {
+    console.error('sendBankTransferAdminAlert (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send official receipt email when admin marks order as paid
- * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
+ * Send official receipt email when admin marks order as paid.
+ * Wrapped in try/catch so it never crashes.
  */
 export const sendOfficialReceiptEmail = async (order) => {
-  const to = order.shippingDetails?.email;
-  if (!to) {
-    console.log('No email provided for official receipt');
+  try {
+    const to = order.shippingDetails?.email;
+    if (!to) return false;
+    const html = getOfficialReceiptHTML(order);
+    const text = `Payment Confirmed!\n\nYour payment has been verified.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nYou'll receive another email when your order ships.`;
+    return await sendViaMailtrap({ to, subject: 'Payment Confirmed - Official Receipt - Nile Collective', html, text });
+  } catch (e) {
+    console.error('sendOfficialReceiptEmail (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };
 
 /**
- * Send newsletter subscription confirmation (optional)
- * SMTP disabled - console log only. Use process.env.EMAIL_USER when adding Brevo/API.
+ * Send newsletter subscription confirmation.
+ * Wrapped in try/catch so it never crashes.
  */
 export const sendNewsletterConfirmation = async (email) => {
-  const to = email;
-  if (!to) {
-    console.log('No email provided for newsletter confirmation');
+  try {
+    const to = email;
+    if (!to) return false;
+    const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Welcome to Nile Collective</h2><p>Thank you for subscribing! You'll be the first to know about new arrivals and exclusive offers.</p></body></html>`;
+    const text = 'Thank you for subscribing to our newsletter!';
+    return await sendViaMailtrap({ to, subject: 'Welcome to Nile Collective Newsletter', html, text });
+  } catch (e) {
+    console.error('sendNewsletterConfirmation (non-blocking):', e?.message || e);
     return false;
   }
-  console.log('Email would have been sent to:', to);
-  return true;
 };

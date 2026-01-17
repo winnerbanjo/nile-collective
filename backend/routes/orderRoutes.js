@@ -173,9 +173,7 @@ router.post('/verify', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Verify payment with Paystack - using hardcoded key for now
-    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || 'sk_live_a1d00a54256f3a395da5f129622d44c976a37b28';
-    
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
     if (!PAYSTACK_SECRET_KEY) {
       console.error('PAYSTACK_SECRET_KEY is not set');
       return res.status(500).json({ message: 'Payment verification service unavailable' });
