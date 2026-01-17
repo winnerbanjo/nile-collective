@@ -2,7 +2,14 @@ import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import axios from 'axios';
-import { sendOrderConfirmationEmail, sendStatusUpdateEmail, sendAdminAlertEmail } from '../utils/emailService.js';
+import { 
+  sendOrderConfirmationEmail, 
+  sendStatusUpdateEmail, 
+  sendAdminAlertEmail,
+  sendBankTransferPendingEmail,
+  sendBankTransferAdminAlert,
+  sendOfficialReceiptEmail
+} from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -286,8 +293,11 @@ router.post('/manual', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send order confirmation email
-    await sendOrderConfirmationEmail(savedOrder);
+    // Send bank transfer pending email to customer
+    await sendBankTransferPendingEmail(savedOrder);
+
+    // Send admin alert for bank transfer order
+    await sendBankTransferAdminAlert(savedOrder);
 
     res.status(201).json({
       success: true,
@@ -320,6 +330,15 @@ router.put('/:id/status', async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
+    // Get the current order to check previous status
+    const currentOrder = await Order.findById(id);
+    if (!currentOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const previousStatus = currentOrder.status;
+
+    // Update order status
     const order = await Order.findByIdAndUpdate(
       id,
       { status: status },
@@ -330,10 +349,16 @@ router.put('/:id/status', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Send status update email for specific statuses
-    const statusesToEmail = ['Processing', 'Shipped', 'Delivered', 'Pending Verification']
-    if (statusesToEmail.includes(status)) {
-      await sendStatusUpdateEmail(order, status)
+    // Special handling: When admin manually changes from 'Pending Verification' to 'paid', send official receipt
+    if (previousStatus === 'Pending Verification' && status === 'paid') {
+      await sendOfficialReceiptEmail(order);
+      console.log(`✅ Official receipt email sent for order ${order._id} (status changed from ${previousStatus} to ${status})`);
+    } else {
+      // Send status update email for all other relevant statuses
+      const statusesToEmail = ['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'];
+      if (statusesToEmail.includes(status)) {
+        await sendStatusUpdateEmail(order, status);
+      }
     }
 
     res.json({
