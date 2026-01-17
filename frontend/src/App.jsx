@@ -20,6 +20,7 @@ import ManageProducts from './pages/ManageProducts'
 import ProductDetail from './pages/ProductDetail'
 import Success from './pages/Success'
 import OrderSummary from './pages/OrderSummary'
+import TrackOrder from './pages/TrackOrder'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Login from './pages/Login'
@@ -82,6 +83,7 @@ function App() {
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/success" element={<Success />} />
                 <Route path="/order-confirmation/:id" element={<OrderSummary />} />
+                <Route path="/track-order" element={<TrackOrder />} />
                   </Routes>
                   {/* Footer outside Routes - shows on all pages */}
                   <Footer />

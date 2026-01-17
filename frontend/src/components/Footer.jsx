@@ -109,6 +109,14 @@ const Footer = () => {
                   Terms
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/track-order"
+                  className="text-sm font-light text-gray-600 hover:text-black transition-colors"
+                >
+                  Track Order
+                </Link>
+              </li>
             </ul>
           </div>
 
