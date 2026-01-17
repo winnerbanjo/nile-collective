@@ -27,23 +27,12 @@ import cloudinary from './config/cloudinary.js';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ✅ UPDATED CORS: This allows your production site to talk to this backend
+// ✅ NUCLEAR CORS FIX: Allow all origins temporarily to prove connection works
 app.use(cors({
-  origin: [
-    'https://nilecollective.co',
-    'https://www.nilecollective.co',
-    'https://nile-collective.vercel.app',
-    'https://nile-collective-ckji.vercel.app'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-User-Id'],
-  exposedHeaders: ['Content-Type'],
-  optionsSuccessStatus: 200
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 }));
-
-// Handle preflight requests explicitly
-app.options('*', cors());
 
 // Body parsing middleware
 app.use(express.json());
@@ -60,6 +49,10 @@ if (!MONGODB_URI) {
 // Routes
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Nile Collective API' });
+});
+
+app.get('/health', (req, res) => {
+  res.send('OK');
 });
 
 app.get('/api/test', (req, res) => {
