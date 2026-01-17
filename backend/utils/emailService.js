@@ -6,8 +6,8 @@ const FROM_EMAIL = 'hello@nilecollective.co';  // Verified domain: nilecollectiv
 const FROM_NAME = 'Nile Collective';
 const MAILTRAP_URL = 'https://send.api.mailtrap.io/api/send';
 
-// Demo: Mailtrap only allows sending to the account owner. Send all to this address for now.
-const DEMO_RECIPIENT = process.env.MAILTRAP_DEMO_RECIPIENT || 'technile0@gmail.com';
+// Admin email address
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'technile0@gmail.com';
 
 if (!MAILTRAP_TOKEN) {
   console.warn('⚠️ MAILTRAP_TOKEN not set. Emails will be logged only.');
@@ -54,7 +54,7 @@ async function sendViaMailtrap({ to, subject, html, text }) {
 }
 
 /**
- * Base luxury email template - clean white, black serif text, gold/black button
+ * Base luxury email template - minimal, high-end: white space, serif fonts, black buttons
  */
 const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', buttonUrl = '#') => {
   const formatPrice = (price) => {
@@ -72,6 +72,9 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
     day: 'numeric'
   });
 
+  // Logo URL - update this to your actual logo hosted on nilecollective.co
+  const logoUrl = 'https://nilecollective.co/logo.png'; // Replace with actual logo URL
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -83,21 +86,23 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
     <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
       <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 60px 20px;">
+          <td align="center" style="padding: 80px 20px;">
             <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
               <!-- Logo / Header -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 700; color: #000000; letter-spacing: 3px; text-transform: lowercase;">
-                    nile collective
+                <td style="padding: 0 0 60px; text-align: center;">
+                  <img src="${logoUrl}" alt="Nile Collective" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                  <div style="display: none; font-family: 'Nunito Sans', sans-serif; font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; text-transform: lowercase; line-height: 0.72;">
+                    <div>nile</div>
+                    <div>collective</div>
                   </div>
                 </td>
               </tr>
               
               <!-- Title -->
               <tr>
-                <td style="padding: 0 0 30px; text-align: center;">
-                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 400; color: #000000; letter-spacing: 1px;">
                     ${title}
                   </h1>
                 </td>
@@ -105,61 +110,43 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
               
               <!-- Message -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; line-height: 1.8; color: #000000; max-width: 500px; margin-left: auto; margin-right: auto;">
+                <td style="padding: 0 0 60px; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 17px; line-height: 1.9; color: #000000; max-width: 480px; margin-left: auto; margin-right: auto;">
                     ${message}
                   </p>
                 </td>
               </tr>
               
-              <!-- Order Details -->
+              <!-- Order Details - Minimal, no borders -->
               <tr>
-                <td style="padding: 0 0 40px;">
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5;">
+                <td style="padding: 0 0 60px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
-                        <table role="presentation" style="width: 100%;">
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Order ID</td>
-                          </tr>
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 24px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Order ID</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
-                        <table role="presentation" style="width: 100%;">
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Date</td>
-                          </tr>
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${orderDate}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 24px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Date</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${orderDate}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px 0;">
-                        <table role="presentation" style="width: 100%;">
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Total</td>
-                          </tr>
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400;">${formatPrice(order.totalAmount || 0)}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 24px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Total</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; color: #000000; font-weight: 400;">${formatPrice(order.totalAmount || 0)}</div>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Button -->
+              <!-- Button - Black background -->
               <tr>
-                <td style="padding: 0 0 50px; text-align: center;">
-                  <a href="${buttonUrl}" style="display: inline-block; padding: 16px 40px; background-color: #D4AF37; color: #000000; text-decoration: none; font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400;">
+                <td style="padding: 0 0 80px; text-align: center;">
+                  <a href="${buttonUrl}" style="display: inline-block; padding: 18px 48px; background-color: #000000; color: #ffffff; text-decoration: none; font-family: 'Georgia', 'Times New Roman', serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400;">
                     ${buttonText}
                   </a>
                 </td>
@@ -167,8 +154,8 @@ const getLuxuryEmailBase = (title, message, order, buttonText = 'View Order', bu
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 40px 0 0; text-align: center; border-top: 1px solid #e5e5e5;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #999999; letter-spacing: 1px;">
+                <td style="padding: 60px 0 0; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 1px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -345,7 +332,7 @@ const getAdminAlertHTML = (order) => {
 };
 
 /**
- * HTML template for bank transfer pending order email (luxury design with bank details)
+ * HTML template for bank transfer pending order email (elite luxury design)
  */
 const getBankTransferPendingHTML = (order) => {
   const formatPrice = (price) => {
@@ -363,15 +350,24 @@ const getBankTransferPendingHTML = (order) => {
     day: 'numeric'
   });
 
-  // Bank details - Update these with your actual bank details
+  // Bank details - Fixed
   const bankDetails = {
-    bankName: process.env.BANK_NAME || 'Your Bank Name',
-    accountName: process.env.BANK_ACCOUNT_NAME || 'Nile Collective',
-    accountNumber: process.env.BANK_ACCOUNT_NUMBER || '1234567890',
+    accountName: 'NILE AFRICA TECHNOLOGIES LTD',
+    bankName: 'Zenith Bank',
+    accountNumber: '1229851938',
   };
 
   const amount = formatPrice(order.totalAmount || 0);
-  const message = `We've received your order! It's currently pending. Please transfer ${amount} to complete your purchase.`;
+  
+  // Check if receiptUrl exists - different message
+  const hasReceipt = order.receiptUrl && order.receiptUrl.trim() !== '';
+  const title = hasReceipt ? 'Order Received' : 'Complete Your Payment';
+  const message = hasReceipt 
+    ? `We've received your order and your payment receipt. Our team is currently verifying the transfer. You will be notified as soon as your order is confirmed and ready for shipping.`
+    : `We've received your order! It's currently pending. Please transfer ${amount} to complete your purchase.`;
+
+  // Logo URL
+  const logoUrl = 'https://nilecollective.co/logo.png';
 
   return `
     <!DOCTYPE html>
@@ -379,92 +375,84 @@ const getBankTransferPendingHTML = (order) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Complete Payment - Nile Collective</title>
+      <title>${title} - Nile Collective</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #ffffff;">
       <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff;">
         <tr>
-          <td align="center" style="padding: 60px 20px;">
+          <td align="center" style="padding: 80px 20px;">
             <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff;">
               <!-- Logo -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 700; color: #000000; letter-spacing: 3px; text-transform: lowercase;">
-                    nile collective
+                <td style="padding: 0 0 60px; text-align: center;">
+                  <img src="${logoUrl}" alt="Nile Collective" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                  <div style="display: none; font-family: 'Nunito Sans', sans-serif; font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; text-transform: lowercase; line-height: 0.72;">
+                    <div>nile</div>
+                    <div>collective</div>
                   </div>
                 </td>
               </tr>
               
               <!-- Title -->
               <tr>
-                <td style="padding: 0 0 30px; text-align: center;">
-                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; font-weight: 400; color: #000000; letter-spacing: 1px;">
-                    Complete Your Payment
+                <td style="padding: 0 0 40px; text-align: center;">
+                  <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 32px; font-weight: 400; color: #000000; letter-spacing: 1px;">
+                    ${title}
                   </h1>
                 </td>
               </tr>
               
               <!-- Message -->
               <tr>
-                <td style="padding: 0 0 40px; text-align: center;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; line-height: 1.8; color: #000000; max-width: 500px; margin-left: auto; margin-right: auto;">
+                <td style="padding: 0 0 60px; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 17px; line-height: 1.9; color: #000000; max-width: 480px; margin-left: auto; margin-right: auto;">
                     ${message}
                   </p>
                 </td>
               </tr>
               
-              <!-- Bank Details Box -->
+              ${!hasReceipt ? `
+              <!-- Bank Details - Minimal, no borders -->
               <tr>
-                <td style="padding: 0 0 40px;">
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; border: 2px solid #D4AF37; background-color: #FFFEF7;">
+                <td style="padding: 0 0 60px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 30px;">
-                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
-                          <tr>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5;">Bank Name</td>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000; text-align: right; border-bottom: 1px solid #e5e5e5;">${bankDetails.bankName}</td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5;">Account Name</td>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000; text-align: right; border-bottom: 1px solid #e5e5e5;">${bankDetails.accountName}</td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase;">Account Number</td>
-                            <td style="padding: 12px 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400; text-align: right;">${bankDetails.accountNumber}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 32px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Account Name</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400;">${bankDetails.accountName}</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 32px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Bank Name</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 18px; color: #000000; font-weight: 400;">${bankDetails.bankName}</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 32px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">Account Number</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400; letter-spacing: 2px;">${bankDetails.accountNumber}</div>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
+              ` : ''}
               
-              <!-- Order Details -->
+              <!-- Order Details - Minimal, no borders -->
               <tr>
-                <td style="padding: 0 0 40px;">
-                  <table role="presentation" style="width: 100%; border-collapse: collapse; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5;">
+                <td style="padding: 0 0 60px;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
-                        <table role="presentation" style="width: 100%;">
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Order ID</td>
-                          </tr>
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 24px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Order ID</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 16px; color: #000000;">${order._id}</div>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px 0; border-bottom: 1px solid #e5e5e5;">
-                        <table role="presentation" style="width: 100%;">
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #666666; letter-spacing: 1px; text-transform: uppercase; padding-bottom: 5px;">Amount to Transfer</td>
-                          </tr>
-                          <tr>
-                            <td style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 24px; color: #000000; font-weight: 400;">${amount}</td>
-                          </tr>
-                        </table>
+                      <td style="padding: 24px 0;">
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Amount</div>
+                        <div style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 28px; color: #000000; font-weight: 400;">${amount}</div>
                       </td>
                     </tr>
                   </table>
@@ -473,8 +461,8 @@ const getBankTransferPendingHTML = (order) => {
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 40px 0 0; text-align: center; border-top: 1px solid #e5e5e5;">
-                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 12px; color: #999999; letter-spacing: 1px;">
+                <td style="padding: 60px 0 0; text-align: center;">
+                  <p style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-size: 11px; color: #999999; letter-spacing: 1px;">
                     © ${new Date().getFullYear()} Nile Collective. All rights reserved.
                   </p>
                 </td>
@@ -543,7 +531,7 @@ export const sendAdminAlertEmail = async (order) => {
   try {
     const html = getAdminAlertHTML(order);
     const text = `New Order Received!\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: '🚀 New Order Received - Nile Collective', html, text });
+    return await sendViaMailtrap({ to: ADMIN_EMAIL, subject: '🚀 New Order Received - Nile Collective', html, text });
   } catch (e) {
     console.error('sendAdminAlertEmail (non-blocking):', e?.message || e);
     return false;
@@ -591,8 +579,15 @@ export const sendBankTransferPendingEmail = async (order) => {
       return false;
     }
     const html = getBankTransferPendingHTML(order);
-    const text = `We've received your order! It's currently pending. Please transfer ₦${(order.totalAmount || 0).toLocaleString()} to complete your purchase.\n\nOrder ID: ${order._id}`;
-    return await sendViaMailtrap({ to, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
+    // Check if receiptUrl exists - different subject
+    const hasReceipt = order.receiptUrl && order.receiptUrl.trim() !== '';
+    const subject = hasReceipt 
+      ? 'Order Received - Payment Verification in Progress - Nile Collective'
+      : 'Complete Your Payment - Order Pending - Nile Collective';
+    const text = hasReceipt
+      ? `We've received your order and your payment receipt. Our team is currently verifying the transfer. You will be notified as soon as your order is confirmed.\n\nOrder ID: ${order._id}`
+      : `We've received your order! It's currently pending. Please transfer ₦${(order.totalAmount || 0).toLocaleString()} to complete your purchase.\n\nOrder ID: ${order._id}`;
+    return await sendViaMailtrap({ to, subject, html, text });
   } catch (e) {
     console.error('sendBankTransferPendingEmail (non-blocking):', e?.message || e);
     return false;
@@ -607,7 +602,7 @@ export const sendBankTransferAdminAlert = async (order) => {
   try {
     const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>New Transfer Order Pending</h2><p>A new bank transfer order has been received. Check your bank app.</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Customer:</strong> ${order.shippingDetails?.name || 'N/A'}</p><p><strong>Amount:</strong> ₦${(order.totalAmount || 0).toLocaleString()}</p><p><strong>Receipt:</strong> <a href="${order.receiptUrl || '#'}">View</a></p></body></html>`;
     const text = `New Transfer Order Pending\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nAmount: ₦${(order.totalAmount || 0).toLocaleString()}\nReceipt: ${order.receiptUrl || ''}`;
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'New Transfer Order Pending - Check your bank app', html, text });
+    return await sendViaMailtrap({ to: ADMIN_EMAIL, subject: 'New Transfer Order Pending - Check your bank app', html, text });
   } catch (e) {
     console.error('sendBankTransferAdminAlert (non-blocking):', e?.message || e);
     return false;
@@ -642,7 +637,7 @@ export const sendNewsletterConfirmation = async (email) => {
   try {
     const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Welcome to Nile Collective</h2><p>Thank you for subscribing! You'll be the first to know about new arrivals and exclusive offers.</p></body></html>`;
     const text = 'Thank you for subscribing to our newsletter!';
-    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Welcome to Nile Collective Newsletter', html, text });
+    return await sendViaMailtrap({ to: email, subject: 'Welcome to Nile Collective Newsletter', html, text });
   } catch (e) {
     console.error('sendNewsletterConfirmation (non-blocking):', e?.message || e);
     return false;
