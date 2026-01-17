@@ -128,8 +128,13 @@ router.post('/', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send order confirmation email
-    await sendOrderConfirmationEmail(savedOrder);
+    // Send order confirmation email (don't let email errors break order creation)
+    try {
+      await sendOrderConfirmationEmail(savedOrder);
+    } catch (emailError) {
+      console.error('Error sending order confirmation email (non-blocking):', emailError);
+      // Continue even if email fails
+    }
 
     res.status(201).json({
       success: true,
@@ -138,6 +143,12 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating order:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
     res.status(400).json({ 
       success: false,
       message: error.message 
@@ -293,11 +304,21 @@ router.post('/manual', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send bank transfer pending email to customer
-    await sendBankTransferPendingEmail(savedOrder);
+    // Send bank transfer pending email to customer (don't let email errors break order creation)
+    try {
+      await sendBankTransferPendingEmail(savedOrder);
+    } catch (emailError) {
+      console.error('Error sending bank transfer pending email (non-blocking):', emailError);
+      // Continue even if email fails
+    }
 
-    // Send admin alert for bank transfer order
-    await sendBankTransferAdminAlert(savedOrder);
+    // Send admin alert for bank transfer order (don't let email errors break order creation)
+    try {
+      await sendBankTransferAdminAlert(savedOrder);
+    } catch (emailError) {
+      console.error('Error sending bank transfer admin alert (non-blocking):', emailError);
+      // Continue even if email fails
+    }
 
     res.status(201).json({
       success: true,
@@ -307,6 +328,12 @@ router.post('/manual', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating manual order:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
     res.status(400).json({ 
       success: false,
       message: error.message 

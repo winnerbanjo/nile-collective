@@ -187,7 +187,9 @@ const CartDrawer = () => {
       }
 
       // Creating manual order
+      console.log('Creating manual order with data:', orderData)
       const orderResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/orders/manual`, orderData)
+      console.log('Manual order response:', orderResponse.data)
 
       if (orderResponse.data.success) {
         // Clear cart and redirect to success page
@@ -277,19 +279,27 @@ const CartDrawer = () => {
         }
       }
 
+      console.log('Creating order with data:', orderData)
       const orderResponse = await axios.post(`https://nile-backend-9wdk.onrender.com/api/orders`, orderData)
+      console.log('Order creation response:', orderResponse.data)
+      
+      if (!orderResponse.data.success || !orderResponse.data.orderId) {
+        throw new Error(orderResponse.data.message || 'Failed to create order')
+      }
+      
       const newOrderId = orderResponse.data.orderId
       setOrderId(newOrderId)
 
       // Check if Paystack script is loaded
       if (typeof window.PaystackPop === 'undefined') {
-        alert('Script loading error')
+        alert('Paystack script not loaded. Please refresh the page and try again.')
         setIsProcessing(false)
         return
       }
 
-      // Calculate amount (including shipping)
-      const amountInKobo = Math.round(grandTotal * 100)
+      // Calculate amount (including shipping) - ensure it's an integer
+      const amountInKobo = Math.round(Number(grandTotal) * 100)
+      console.log('Amount in kobo:', amountInKobo, 'Grand total:', grandTotal)
       // Paystack email - hardcoded (DO NOT REMOVE)
       const email = 'business@nile.ng'
       
@@ -328,7 +338,15 @@ const CartDrawer = () => {
       
       handler.openIframe()
     } catch (error) {
-      alert('Failed to initialize checkout. Please try again.')
+      console.error('Checkout initialization error:', error)
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        stack: error.stack
+      })
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to initialize checkout. Please try again.'
+      alert(errorMessage)
       setIsProcessing(false)
     }
   }
