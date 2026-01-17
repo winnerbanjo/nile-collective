@@ -33,7 +33,7 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log('Fetching orders from: ${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders')
+      console.log(`Fetching orders from: ${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders`)
       setLoading(true)
       setError(null)
       const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/orders`)
