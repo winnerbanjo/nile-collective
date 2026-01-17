@@ -9,11 +9,19 @@ const ADMIN_EMAIL = 'technile0@gmail.com';
 let transporter;
 try {
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASSWORD
-    }
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000, // 10 seconds
+    socketTimeout: 10000 // 10 seconds
   });
 
   // Verify transporter configuration (non-blocking, won't crash server)
@@ -688,11 +696,18 @@ export const sendOrderConfirmationEmail = async (order) => {
       text: `Thank you for shopping with Nile Collective!\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}\n\nWe've received your order and it's being processed.`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection - don't let it block order creation
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Order confirmation email sent to ${customerEmail}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending order confirmation email:', error);
+    console.error('❌ Error sending order confirmation email (non-blocking):', error);
+    console.error('Order will still be created successfully');
     return false;
   }
 };
@@ -715,11 +730,17 @@ export const sendAdminAlertEmail = async (order) => {
       text: `New Order Received!\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nTotal: ₦${order.totalAmount.toLocaleString()}`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Admin alert email sent to ${ADMIN_EMAIL}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending admin alert email:', error);
+    console.error('❌ Error sending admin alert email (non-blocking):', error);
     return false;
   }
 };
@@ -750,7 +771,13 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
         text: `Great news! Your order has been shipped and is on its way to you.\n\nOrder ID: ${order._id}\n\nYou can track your order status anytime by visiting your account.`
       };
 
-      await transporter.sendMail(mailOptions);
+      // Send email with timeout protection
+      await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email send timeout')), 10000)
+        )
+      ]);
       console.log(`✅ Shipping update email sent to ${customerEmail} for order ${order._id}`);
       return true;
     }
@@ -789,11 +816,17 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
       text: `${message}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Status update email sent to ${customerEmail} for order ${order._id}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending status update email:', error);
+    console.error('❌ Error sending status update email (non-blocking):', error);
     return false;
   }
 };
@@ -822,11 +855,18 @@ export const sendBankTransferPendingEmail = async (order) => {
       text: `We've received your order! Please complete your bank transfer. Your order is currently PENDING verification.\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection - don't let it block order creation
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Bank transfer pending email sent to ${customerEmail}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending bank transfer pending email:', error);
+    console.error('❌ Error sending bank transfer pending email (non-blocking):', error);
+    console.error('Order will still be created successfully');
     return false;
   }
 };
@@ -866,11 +906,18 @@ export const sendBankTransferAdminAlert = async (order) => {
       text: `New Transfer Order Pending - Check your bank app\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nAmount: ₦${order.totalAmount.toLocaleString()}\nReceipt: ${order.receiptUrl}`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection - don't let it block order creation
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Bank transfer admin alert sent to ${ADMIN_EMAIL}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending bank transfer admin alert:', error);
+    console.error('❌ Error sending bank transfer admin alert (non-blocking):', error);
+    console.error('Order will still be created successfully');
     return false;
   }
 };
@@ -899,11 +946,17 @@ export const sendOfficialReceiptEmail = async (order) => {
       text: `Payment Confirmed!\n\nYour payment has been verified and your order is now being processed.\n\nOrder ID: ${order._id}\nTotal: ₦${order.totalAmount.toLocaleString()}\n\nYou'll receive another email when your order ships.`
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Official receipt email sent to ${customerEmail} for order ${order._id}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending official receipt email:', error);
+    console.error('❌ Error sending official receipt email (non-blocking):', error);
     return false;
   }
 };
@@ -934,11 +987,17 @@ export const sendNewsletterConfirmation = async (email) => {
       text: 'Thank you for subscribing to our newsletter!'
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout protection
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      )
+    ]);
     console.log(`✅ Newsletter confirmation sent to ${email}`);
     return true;
   } catch (error) {
-    console.error('❌ Error sending newsletter confirmation:', error);
+    console.error('❌ Error sending newsletter confirmation (non-blocking):', error);
     return false;
   }
 };
