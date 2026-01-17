@@ -2,9 +2,12 @@ import axios from 'axios';
 
 // Mailtrap Email API (HTTPS, port 443) - works on Render. No SMTP.
 const MAILTRAP_TOKEN = process.env.MAILTRAP_TOKEN;
-const FROM_EMAIL = 'hello@demomailtrap.com';
-const FROM_NAME = 'Nile Collective';
+const FROM_EMAIL = 'hello@demomailtrap.com';  // Must be exact for Mailtrap demo
+const FROM_NAME = 'Nile Collective';          // Must be exact for Mailtrap demo
 const MAILTRAP_URL = 'https://send.api.mailtrap.io/api/send';
+
+// Demo: Mailtrap only allows sending to the account owner. Send all to this address for now.
+const DEMO_RECIPIENT = process.env.MAILTRAP_DEMO_RECIPIENT || 'technile0@gmail.com';
 
 if (!MAILTRAP_TOKEN) {
   console.warn('⚠️ MAILTRAP_TOKEN not set. Emails will be logged only.');
@@ -688,11 +691,9 @@ const getShippingUpdateHTML = (order) => {
  */
 export const sendOrderConfirmationEmail = async (order) => {
   try {
-    const to = order.shippingDetails?.email;
-    if (!to) return false;
     const html = getOrderConfirmationHTML(order);
     const text = `Thank you for shopping with Nile Collective!\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nWe've received your order and it's being processed.`;
-    return await sendViaMailtrap({ to, subject: 'Order Confirmation - Nile Collective', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Order Confirmation - Nile Collective', html, text });
   } catch (e) {
     console.error('sendOrderConfirmationEmail (non-blocking):', e?.message || e);
     return false;
@@ -705,11 +706,9 @@ export const sendOrderConfirmationEmail = async (order) => {
  */
 export const sendAdminAlertEmail = async (order) => {
   try {
-    const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-    if (!to) return false;
     const html = getAdminAlertHTML(order);
     const text = `New Order Received!\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
-    return await sendViaMailtrap({ to, subject: '🚀 New Order Received - Nile Collective', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: '🚀 New Order Received - Nile Collective', html, text });
   } catch (e) {
     console.error('sendAdminAlertEmail (non-blocking):', e?.message || e);
     return false;
@@ -722,8 +721,6 @@ export const sendAdminAlertEmail = async (order) => {
  */
 export const sendStatusUpdateEmail = async (order, newStatus) => {
   try {
-    const to = order.shippingDetails?.email;
-    if (!to) return false;
     let html, subject, text;
     if (newStatus === 'Shipped') {
       subject = 'Your Order Has Been Shipped - Nile Collective';
@@ -735,7 +732,7 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
       html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Order Status Update</h2><p>${msg}</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Status:</strong> ${newStatus}</p></body></html>`;
       text = `${msg}\n\nOrder ID: ${order._id}\nStatus: ${newStatus}`;
     }
-    return await sendViaMailtrap({ to, subject, html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject, html, text });
   } catch (e) {
     console.error('sendStatusUpdateEmail (non-blocking):', e?.message || e);
     return false;
@@ -748,11 +745,9 @@ export const sendStatusUpdateEmail = async (order, newStatus) => {
  */
 export const sendBankTransferPendingEmail = async (order) => {
   try {
-    const to = order.shippingDetails?.email;
-    if (!to) return false;
     const html = getBankTransferPendingHTML(order);
     const text = `We've received your order! Please complete your bank transfer. Your order is PENDING verification.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}`;
-    return await sendViaMailtrap({ to, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Complete Your Payment - Order Pending - Nile Collective', html, text });
   } catch (e) {
     console.error('sendBankTransferPendingEmail (non-blocking):', e?.message || e);
     return false;
@@ -765,11 +760,9 @@ export const sendBankTransferPendingEmail = async (order) => {
  */
 export const sendBankTransferAdminAlert = async (order) => {
   try {
-    const to = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-    if (!to) return false;
     const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>New Transfer Order Pending</h2><p>A new bank transfer order has been received. Check your bank app.</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Customer:</strong> ${order.shippingDetails?.name || 'N/A'}</p><p><strong>Amount:</strong> ₦${(order.totalAmount || 0).toLocaleString()}</p><p><strong>Receipt:</strong> <a href="${order.receiptUrl || '#'}">View</a></p></body></html>`;
     const text = `New Transfer Order Pending\n\nOrder ID: ${order._id}\nCustomer: ${order.shippingDetails?.name || 'N/A'}\nAmount: ₦${(order.totalAmount || 0).toLocaleString()}\nReceipt: ${order.receiptUrl || ''}`;
-    return await sendViaMailtrap({ to, subject: 'New Transfer Order Pending - Check your bank app', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'New Transfer Order Pending - Check your bank app', html, text });
   } catch (e) {
     console.error('sendBankTransferAdminAlert (non-blocking):', e?.message || e);
     return false;
@@ -782,11 +775,9 @@ export const sendBankTransferAdminAlert = async (order) => {
  */
 export const sendOfficialReceiptEmail = async (order) => {
   try {
-    const to = order.shippingDetails?.email;
-    if (!to) return false;
     const html = getOfficialReceiptHTML(order);
     const text = `Payment Confirmed!\n\nYour payment has been verified.\n\nOrder ID: ${order._id}\nTotal: ₦${(order.totalAmount || 0).toLocaleString()}\n\nYou'll receive another email when your order ships.`;
-    return await sendViaMailtrap({ to, subject: 'Payment Confirmed - Official Receipt - Nile Collective', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Payment Confirmed - Official Receipt - Nile Collective', html, text });
   } catch (e) {
     console.error('sendOfficialReceiptEmail (non-blocking):', e?.message || e);
     return false;
@@ -799,11 +790,9 @@ export const sendOfficialReceiptEmail = async (order) => {
  */
 export const sendNewsletterConfirmation = async (email) => {
   try {
-    const to = email;
-    if (!to) return false;
     const html = `<!DOCTYPE html><html><body style="font-family:Arial"><h2>Welcome to Nile Collective</h2><p>Thank you for subscribing! You'll be the first to know about new arrivals and exclusive offers.</p></body></html>`;
     const text = 'Thank you for subscribing to our newsletter!';
-    return await sendViaMailtrap({ to, subject: 'Welcome to Nile Collective Newsletter', html, text });
+    return await sendViaMailtrap({ to: DEMO_RECIPIENT, subject: 'Welcome to Nile Collective Newsletter', html, text });
   } catch (e) {
     console.error('sendNewsletterConfirmation (non-blocking):', e?.message || e);
     return false;

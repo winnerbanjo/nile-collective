@@ -128,17 +128,14 @@ router.post('/', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send response immediately - don't wait for email
+    // Response BEFORE email - instant. No await on sendEmail.
     res.status(201).json({
       success: true,
       orderId: savedOrder._id,
       order: savedOrder
     });
 
-    // Fire-and-forget email (do not await - user must see success in <1s)
-    setImmediate(() => {
-      sendOrderConfirmationEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
-    });
+    sendOrderConfirmationEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
   } catch (error) {
     console.error('Error creating order:', error);
     console.error('Error stack:', error.stack);
@@ -296,7 +293,7 @@ router.post('/manual', async (req, res) => {
 
     const savedOrder = await order.save();
 
-    // Send response immediately - don't wait for emails
+    // Response BEFORE email - instant. No await on sendEmail.
     res.status(201).json({
       success: true,
       orderId: savedOrder._id,
@@ -304,11 +301,8 @@ router.post('/manual', async (req, res) => {
       message: 'Order received! We will verify your transfer and start processing your luxury items immediately.'
     });
 
-    // Fire-and-forget emails (do not await)
-    setImmediate(() => {
-      sendBankTransferPendingEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
-      sendBankTransferAdminAlert(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
-    });
+    sendBankTransferPendingEmail(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
+    sendBankTransferAdminAlert(savedOrder).catch((e) => console.error('Email (non-blocking):', e));
   } catch (error) {
     console.error('Error creating manual order:', error);
     console.error('Error stack:', error.stack);
@@ -359,20 +353,17 @@ router.put('/:id/status', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Send response immediately - user must see success in <1s
+    // Response BEFORE email - instant. No await on sendEmail.
     res.json({
       success: true,
       order: order
     });
 
-    // Fire-and-forget emails (do not await)
-    setImmediate(() => {
-      if (previousStatus === 'Pending Verification' && status === 'paid') {
-        sendOfficialReceiptEmail(order).catch((e) => console.error('Email (non-blocking):', e));
-      } else if (['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'].includes(status)) {
-        sendStatusUpdateEmail(order, status).catch((e) => console.error('Email (non-blocking):', e));
-      }
-    });
+    if (previousStatus === 'Pending Verification' && status === 'paid') {
+      sendOfficialReceiptEmail(order).catch((e) => console.error('Email (non-blocking):', e));
+    } else if (['Processing', 'Shipped', 'Delivered', 'Pending Verification', 'paid'].includes(status)) {
+      sendStatusUpdateEmail(order, status).catch((e) => console.error('Email (non-blocking):', e));
+    }
   } catch (error) {
     console.error('Error updating order status:', error);
     res.status(400).json({ 
