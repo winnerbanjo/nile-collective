@@ -2,7 +2,7 @@ import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import axios from 'axios';
-import { sendOrderConfirmationEmail, sendStatusUpdateEmail } from '../utils/emailService.js';
+import { sendOrderConfirmationEmail, sendStatusUpdateEmail, sendAdminAlertEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -186,8 +186,11 @@ router.post('/verify', async (req, res) => {
       order.paymentReference = reference;
       await order.save();
 
-      // Send order confirmation email
+      // Send order confirmation email to customer
       await sendOrderConfirmationEmail(order);
+
+      // Send admin alert email
+      await sendAdminAlertEmail(order);
 
       // Reduce stock for each item in the order
       for (const item of order.items) {
