@@ -1,39 +1,44 @@
 import nodemailer from 'nodemailer';
 
-// Email configuration - using environment variables with fallback
-const EMAIL_USER = process.env.EMAIL_USER || 'technile0@gmail.com';
-const EMAIL_PASSWORD = process.env.EMAIL_PASS || 'ozqy moca kthh arrm';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'technile0@gmail.com';
+// Email configuration - using environment variables only (no hardcoded secrets)
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASSWORD = process.env.EMAIL_PASS;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
 
-// Create Nodemailer transporter with error handling
+// Create Nodemailer transporter with error handling (initialized once at module load)
 let transporter;
 try {
-  transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASSWORD
-    },
-    pool: true, // Keep connection open to prevent timeouts on cloud hosts like Render
-    tls: {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000, // 10 seconds
-    socketTimeout: 10000 // 10 seconds
-  });
+  if (!EMAIL_USER || !EMAIL_PASSWORD) {
+    console.warn('⚠️ EMAIL_USER or EMAIL_PASS environment variables not set. Email functionality will be disabled.');
+    transporter = null;
+  } else {
+    transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // true for 465, false for other ports
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASSWORD
+      },
+      pool: true, // Keep connection open to prevent timeouts on cloud hosts like Render
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000, // 10 seconds
+      socketTimeout: 10000 // 10 seconds
+    });
 
-  // Verify transporter configuration (non-blocking, won't crash server)
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error('❌ Email transporter error (non-blocking):', error);
-      console.error('Email functionality may be limited, but server will continue running');
-    } else {
-      console.log('✅ Email transporter is ready to send emails');
-    }
-  });
+    // Verify transporter configuration (non-blocking, won't crash server)
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error('❌ Email transporter error (non-blocking):', error);
+        console.error('Email functionality may be limited, but server will continue running');
+      } else {
+        console.log('✅ Email transporter is ready to send emails');
+      }
+    });
+  }
 } catch (error) {
   console.error('❌ Error initializing email transporter (non-blocking):', error);
   console.error('Email functionality will be disabled, but server will continue running');

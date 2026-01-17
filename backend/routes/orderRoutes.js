@@ -202,51 +202,54 @@ router.post('/verify', async (req, res) => {
 
     // Check if payment was successful
     if (paystackResponse.data.status && paystackResponse.data.data.status === 'success') {
-      // Update order status
-      order.status = 'paid';
-      order.paymentReference = reference;
-      await order.save();
-
-      // Reduce stock for each item in the order
-      for (const item of order.items) {
-        const product = await Product.findById(item.productId);
-        if (product) {
-          // If item has size and color, find the variant and reduce stock
-          if (item.size && item.color && product.variants && product.variants.length > 0) {
-            const variant = product.variants.find(
-              v => v.size === item.size && v.color === item.color
-            );
-            if (variant) {
-              variant.stock = Math.max(0, variant.stock - item.quantity);
-              await product.save();
-            }
-          }
-          // Note: If no variants, we might want to add a general stock field to Product model
-          // For now, we only reduce stock for variant-based products
-        }
-      }
-
-      // Send response immediately - don't wait for emails
+      // Send response IMMEDIATELY - before any database operations
       res.json({
         success: true,
         message: 'Payment verified successfully',
-        order: order
+        orderId: order._id
       });
 
-      // Send emails in background (non-blocking, after response)
+      // Update order status and reduce stock in background (non-blocking)
       setImmediate(async () => {
-        // Send order confirmation email to customer
         try {
-          await sendOrderConfirmationEmail(order);
-        } catch (emailError) {
-          console.error('Error sending order confirmation email (non-blocking):', emailError);
-        }
+          // Update order status
+          order.status = 'paid';
+          order.paymentReference = reference;
+          await order.save();
 
-        // Send admin alert email
-        try {
-          await sendAdminAlertEmail(order);
-        } catch (emailError) {
-          console.error('Error sending admin alert email (non-blocking):', emailError);
+          // Reduce stock for each item in the order
+          for (const item of order.items) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+              // If item has size and color, find the variant and reduce stock
+              if (item.size && item.color && product.variants && product.variants.length > 0) {
+                const variant = product.variants.find(
+                  v => v.size === item.size && v.color === item.color
+                );
+                if (variant) {
+                  variant.stock = Math.max(0, variant.stock - item.quantity);
+                  await product.save();
+                }
+              }
+              // Note: If no variants, we might want to add a general stock field to Product model
+              // For now, we only reduce stock for variant-based products
+            }
+          }
+
+          // Send emails in background (non-blocking)
+          try {
+            await sendOrderConfirmationEmail(order);
+          } catch (emailError) {
+            console.error('Error sending order confirmation email (non-blocking):', emailError);
+          }
+
+          try {
+            await sendAdminAlertEmail(order);
+          } catch (emailError) {
+            console.error('Error sending admin alert email (non-blocking):', emailError);
+          }
+        } catch (error) {
+          console.error('Error in background order processing:', error);
         }
       });
     } else {
