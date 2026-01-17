@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Mailtrap Email API (HTTPS, port 443) - works on Render. No SMTP.
 const MAILTRAP_TOKEN = process.env.MAILTRAP_TOKEN;
-const FROM_EMAIL = 'hello@demomailtrap.com';  // Must be exact for Mailtrap demo
-const FROM_NAME = 'Nile Collective';          // Must be exact for Mailtrap demo
+const FROM_EMAIL = 'hello@nilecollective.co';  // Verified domain: nilecollective.co
+const FROM_NAME = 'Nile Collective';
 const MAILTRAP_URL = 'https://send.api.mailtrap.io/api/send';
 
 // Demo: Mailtrap only allows sending to the account owner. Send all to this address for now.
